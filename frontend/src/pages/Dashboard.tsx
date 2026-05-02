@@ -19,10 +19,9 @@ const Dashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
+  const [activeTrackers, setActiveTrackers] = useState<string[]>([]);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
-
-  const [activeTrackerId, setActiveTrackerId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -62,36 +61,29 @@ const Dashboard = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (activeTrackerId) {
+      if (activeTrackers.length > 0) {
         setAllTasks(prev => prev.map(t => 
-          t._id === activeTrackerId ? { ...t, timeSpent: (t.timeSpent || 0) + 1 } : t
+          activeTrackers.includes(t._id) ? { ...t, timeSpent: (t.timeSpent || 0) + 1 } : t
         ));
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [activeTrackerId]);
+  }, [activeTrackers]);
 
   const toggleTracker = async (taskId: string) => {
-    if (activeTrackerId === taskId) {
+    if (activeTrackers.includes(taskId)) {
       // Pause
-      setActiveTrackerId(null);
+      setActiveTrackers(prev => prev.filter(id => id !== taskId));
       const task = allTasks.find(t => t._id === taskId);
       if (task) {
         try {
+          // Send the current incremented time (since allTasks is updated every second)
           await api.put(`/tasks/${taskId}`, { timeSpent: task.timeSpent });
         } catch (e) { console.error(e); }
       }
     } else {
-      // Save current active before switching
-      if (activeTrackerId) {
-        const activeTask = allTasks.find(t => t._id === activeTrackerId);
-        if (activeTask) {
-          try {
-            await api.put(`/tasks/${activeTrackerId}`, { timeSpent: activeTask.timeSpent });
-          } catch (e) { console.error(e); }
-        }
-      }
-      setActiveTrackerId(taskId);
+      // Play - don't stop others!
+      setActiveTrackers(prev => [...prev, taskId]);
     }
   };
 
@@ -222,7 +214,7 @@ const Dashboard = () => {
           
           <div className="space-y-2">
             {allTasks.length > 0 ? allTasks.slice(0, 5).map((task) => {
-              const isActive = activeTrackerId === task._id;
+              const isActive = activeTrackers.includes(task._id);
               const seconds = task.timeSpent || 0;
               return (
               <div key={task._id} className={clsx(
