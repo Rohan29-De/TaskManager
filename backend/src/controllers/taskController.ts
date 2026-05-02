@@ -11,7 +11,9 @@ const taskSchema = Joi.object({
   priority: Joi.string().valid('Low', 'Medium', 'High').optional(),
   status: Joi.string().valid('To Do', 'In Progress', 'Done').optional(),
   projectId: Joi.string().required(),
-  assignees: Joi.array().items(Joi.string()).optional()
+  assignees: Joi.array().items(Joi.string()).optional(),
+  tags: Joi.array().items(Joi.string()).optional(),
+  notification: Joi.string().optional().allow('')
 });
 
 export const createTask = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -22,7 +24,7 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    const { title, description, dueDate, priority, status, projectId, assignees } = req.body;
+    const { title, description, dueDate, priority, status, projectId, assignees, tags, notification } = req.body;
 
     const project = await Project.findById(projectId);
     if (!project) {
@@ -43,7 +45,9 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
       priority: priority || 'Medium',
       status: status || 'To Do',
       project: projectId,
-      assignees: assignees || []
+      assignees: assignees || [],
+      tags: tags || [],
+      notification: notification || ''
     });
 
     await task.save();
@@ -84,7 +88,7 @@ export const getTasks = async (req: AuthRequest, res: Response): Promise<void> =
 export const updateTask = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { taskId } = req.params;
-    const { status, priority, assignees, dueDate, title, description } = req.body;
+    const { status, priority, assignees, dueDate, title, description, timeSpent, comments, tags, notification } = req.body;
 
     const task = await Task.findById(taskId);
     if (!task) {
@@ -116,6 +120,10 @@ export const updateTask = async (req: AuthRequest, res: Response): Promise<void>
     if (dueDate) task.dueDate = dueDate;
     if (title) task.title = title;
     if (description) task.description = description;
+    if (timeSpent !== undefined) task.timeSpent = timeSpent;
+    if (comments !== undefined) task.comments = comments;
+    if (tags !== undefined) task.tags = tags;
+    if (notification !== undefined) task.notification = notification;
 
     await task.save();
     res.status(200).json(task);
