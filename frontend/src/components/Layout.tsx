@@ -16,7 +16,8 @@ import {
   Clock,
   Flag,
   Tag,
-  UserPlus
+  UserPlus,
+  Circle
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -26,6 +27,8 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const navigate = useNavigate();
   const [showNewTask, setShowNewTask] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
 
@@ -124,6 +127,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <input
                 type="text"
                 placeholder="Search"
+                value={searchQuery}
+                onChange={async (e) => {
+                  setSearchQuery(e.target.value);
+                  if (e.target.value) {
+                    try {
+                      const res = await api.get('/tasks');
+                      setSearchResults(res.data.filter((t: any) => t.title.toLowerCase().includes(e.target.value.toLowerCase())));
+                    } catch(err) { console.error(err); }
+                  } else {
+                    setSearchResults([]);
+                  }
+                }}
                 className="subtle-input pl-10 w-full"
                 onClick={() => setShowSearchDropdown(true)}
                 onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
@@ -147,33 +162,28 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
                   <div className="p-6">
                     <h4 className="font-bold text-gray-900 mb-4">Tasks</h4>
-                    <div className="space-y-4">
-                      {/* Hardcoded items for design matching, can be linked to dynamic search results later */}
-                      <div className="flex items-start">
-                        <CheckCircle2 className="w-5 h-5 text-[#D4B541] mr-3 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">Report - 01/23</p>
-                          <p className="text-xs text-gray-500">E-commerce stuff - Important</p>
+                    <div className="space-y-4 max-h-64 overflow-y-auto">
+                      {searchResults.length > 0 ? searchResults.map((task: any) => (
+                        <div key={task._id} className="flex items-start cursor-pointer hover:bg-gray-50 p-2 -mx-2 rounded-lg" onClick={() => navigate(`/projects`)}>
+                          {task.status === 'Done' ? (
+                            <CheckCircle2 className="w-5 h-5 text-[#D4B541] mr-3 flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <Circle className="w-5 h-5 text-gray-300 mr-3 flex-shrink-0 mt-0.5" />
+                          )}
+                          <div>
+                            <p className={clsx("text-sm font-bold", task.status === 'Done' ? "text-gray-400 line-through" : "text-gray-900")}>{task.title}</p>
+                            <p className="text-xs text-gray-500 truncate">{task.description || 'No description'}</p>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex items-start">
-                        <CheckCircle2 className="w-5 h-5 text-[#D4B541] mr-3 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">Report - 02/23</p>
-                          <p className="text-xs text-gray-500">E-commerce stuff - Important</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start">
-                        <Circle className="w-5 h-5 text-gray-300 mr-3 flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">Report Q4</p>
-                          <p className="text-xs text-gray-500">Company reports - Monthly</p>
-                        </div>
-                      </div>
+                      )) : searchQuery ? (
+                        <p className="text-sm text-gray-500">No tasks found.</p>
+                      ) : (
+                        <p className="text-sm text-gray-500">Type to search for tasks...</p>
+                      )}
                     </div>
                   </div>
 
-                  <div className="p-4 border-t border-gray-100 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
+                  <div className="p-4 border-t border-gray-100 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors" onClick={() => navigate('/projects')}>
                     <p className="text-sm font-medium text-gray-700 flex items-center justify-center">
                       <span className="mr-2">≡</span> Advanced search
                     </p>
