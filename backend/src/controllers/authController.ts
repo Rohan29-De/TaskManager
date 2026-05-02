@@ -78,3 +78,12 @@ export const getMe = async (req: any, res: Response): Promise<void> => {
     res.status(401).json({ error: 'Not authenticated' });
   }
 };
+
+export const getAllUsers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await User.find({}, 'name email _id');
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};

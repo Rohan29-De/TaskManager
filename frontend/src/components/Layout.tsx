@@ -35,6 +35,11 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   
   const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
   const [newTaskPriority, setNewTaskPriority] = useState<'Low' | 'Medium' | 'High'>('Medium');
+  const [newTaskNotification, setNewTaskNotification] = useState<string>('');
+  const [newTaskTagsInput, setNewTaskTagsInput] = useState<string>('');
+  const [newTaskAssignee, setNewTaskAssignee] = useState<string>('');
+  
+  const [users, setUsers] = useState<any[]>([]);
 
   const handleSearch = async (query: string, filter: string | null) => {
     if (!query && !filter) {
@@ -69,14 +74,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchProjectsAndUsers = async () => {
       try {
-        const res = await api.get('/projects');
-        setProjects(res.data);
-        if (res.data.length > 0) setSelectedProjectId(res.data[0]._id);
+        const [projRes, usersRes] = await Promise.all([
+          api.get('/projects'),
+          api.get('/auth/users')
+        ]);
+        setProjects(projRes.data);
+        if (projRes.data.length > 0) setSelectedProjectId(projRes.data[0]._id);
+        setUsers(usersRes.data);
       } catch (e) { console.error(e); }
     };
-    fetchProjects();
+    fetchProjectsAndUsers();
   }, [showNewTask]); // Refresh when modal opens
 
   const handleCreateTask = async (e: React.FormEvent) => {
@@ -101,6 +110,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         projectId: projId
       };
       if (newTaskDueDate) reqBody.dueDate = newTaskDueDate;
+      if (newTaskNotification) reqBody.notification = newTaskNotification;
+      if (newTaskTagsInput) reqBody.tags = newTaskTagsInput.split(',').map(t => t.trim()).filter(Boolean);
+      if (newTaskAssignee) reqBody.assignees = [newTaskAssignee];
 
       await api.post('/tasks', reqBody);
       setShowNewTask(false);
@@ -108,6 +120,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       setNewTaskDesc('');
       setNewTaskDueDate('');
       setNewTaskPriority('Medium');
+      setNewTaskNotification('');
+      setNewTaskTagsInput('');
+      setNewTaskAssignee('');
       window.location.reload(); // Quick refresh for demo
     } catch (err) {
       console.error(err);
@@ -335,8 +350,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 <div className="flex items-center">
                   <span className="w-32 flex items-center text-sm font-medium text-gray-500"><Bell className="w-4 h-4 mr-2" /> Notification</span>
                   <div className="flex space-x-2">
-                    <button type="button" className="px-4 py-1.5 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-300">In 1 hour</button>
-                    <button type="button" className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"><Plus className="w-4 h-4" /></button>
+                    {['In 1 hour', 'Tomorrow', 'None'].map(n => (
+                      <button 
+                        key={n}
+                        type="button" 
+                        onClick={() => setNewTaskNotification(n)}
+                        className={clsx("px-4 py-1.5 border rounded-full text-sm font-medium transition-colors", 
+                          newTaskNotification === n ? "border-[#F2E266] bg-[#FDF9DE] text-gray-900" : "border-gray-200 text-gray-700 hover:border-gray-300")}
+                      >{n}</button>
+                    ))}
                   </div>
                 </div>
 
@@ -357,12 +379,27 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
                 <div className="flex items-center">
                   <span className="w-32 flex items-center text-sm font-medium text-gray-500"><Tag className="w-4 h-4 mr-2" /> Tags</span>
-                  <button type="button" className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900"><Plus className="w-4 h-4 mr-1" /> Add tags</button>
+                  <input 
+                    type="text"
+                    value={newTaskTagsInput}
+                    onChange={(e) => setNewTaskTagsInput(e.target.value)}
+                    placeholder="e.g. urgent, backend, design"
+                    className="flex-1 border border-gray-200 rounded-full text-sm px-4 py-1.5 text-gray-700 focus:border-[#F2E266] focus:ring-1 focus:ring-[#F2E266] outline-none transition-colors"
+                  />
                 </div>
 
                 <div className="flex items-center">
                   <span className="w-32 flex items-center text-sm font-medium text-gray-500"><UserPlus className="w-4 h-4 mr-2" /> Assign</span>
-                  <button type="button" className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900"><Plus className="w-4 h-4 mr-1" /> Add assignee</button>
+                  <select
+                    value={newTaskAssignee}
+                    onChange={(e) => setNewTaskAssignee(e.target.value)}
+                    className="flex-1 border border-gray-200 rounded-full text-sm px-4 py-1.5 text-gray-700 focus:border-[#F2E266] focus:ring-1 focus:ring-[#F2E266] outline-none cursor-pointer appearance-none bg-white"
+                  >
+                    <option value="">Unassigned</option>
+                    {users.map((u: any) => (
+                      <option key={u._id} value={u._id}>{u.name} ({u.email})</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
