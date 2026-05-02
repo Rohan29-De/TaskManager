@@ -300,6 +300,9 @@ const Dashboard = () => {
             >
               <Plus className="w-4 h-4 mr-2" /> Add
             </button>
+          </div>
+        </div>
+
         {/* Productivity Stats Widget */}
         <div className="bento-card flex-shrink-0 w-full">
           <h3 className="font-bold text-lg mb-6">Productivity</h3>
