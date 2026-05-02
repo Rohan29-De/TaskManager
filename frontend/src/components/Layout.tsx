@@ -27,6 +27,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const navigate = useNavigate();
   const [showNewTask, setShowNewTask] = useState(false);
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
@@ -271,15 +272,46 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <Plus className="h-4 w-4 mr-1" />
               New task
             </button>
-            <button className="text-gray-500 hover:text-gray-700">
+            <button onClick={() => navigate('/notifications')} className="text-gray-500 hover:text-gray-700 relative transition-colors">
               <Mail className="h-6 w-6" />
+              <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
             </button>
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm">
-              <img 
-                src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
-                alt="Profile" 
-                className="w-full h-full object-cover bg-[#FAD9A1]"
-              />
+            <div className="relative">
+              <button 
+                onClick={() => setShowProfileDropdown(!showProfileDropdown)} 
+                className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm hover:ring-2 hover:ring-[#F2E266] transition-all focus:outline-none"
+              >
+                <img 
+                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
+                  alt="Profile" 
+                  className="w-full h-full object-cover bg-[#FAD9A1]"
+                />
+              </button>
+
+              {showProfileDropdown && (
+                <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden transform origin-top-right transition-all">
+                  <div className="p-4 border-b border-gray-50 flex items-center">
+                    <img 
+                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
+                      className="w-10 h-10 rounded-full bg-[#FAD9A1] mr-3 border border-gray-100"
+                    />
+                    <div className="overflow-hidden">
+                      <p className="text-sm font-bold text-gray-900 truncate">{user?.name || 'Guest User'}</p>
+                      <p className="text-xs text-gray-500 truncate">{user?.email || 'guest@organizo.com'}</p>
+                    </div>
+                  </div>
+                  <div className="p-2">
+                    <button onClick={() => { setShowProfileDropdown(false); navigate('/settings'); }} className="w-full flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-[#FDF9DE] hover:text-gray-900 rounded-xl font-medium transition-colors">
+                      <Settings className="w-4 h-4 mr-3 text-gray-400" /> Account Settings
+                    </button>
+                  </div>
+                  <div className="p-2 border-t border-gray-50">
+                    <button onClick={() => { setShowProfileDropdown(false); handleLogout(); }} className="w-full flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors">
+                      <LogOut className="w-4 h-4 mr-3 text-red-400" /> Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </header>
