@@ -120,9 +120,15 @@ const Dashboard = () => {
 
             {tasks.map((task, i) => (
               <div key={task._id || i} className="flex items-center justify-between pb-4 border-b border-gray-100 last:border-0 last:pb-0">
-                <div className="flex items-center">
+                <div className="flex items-center cursor-pointer" onClick={async () => {
+                  try {
+                    const newStatus = task.status === 'Done' ? 'To Do' : 'Done';
+                    await api.put(`/tasks/${task._id}`, { status: newStatus });
+                    setTasks(tasks.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
+                  } catch (e) { console.error(e); }
+                }}>
                   <div className={clsx(
-                    "w-5 h-5 rounded-full border-2 mr-3",
+                    "w-5 h-5 rounded-full border-2 mr-3 flex-shrink-0",
                     task.status === 'Done' ? "bg-[#F2E266] border-[#F2E266]" : "border-gray-300"
                   )}>
                     {task.status === 'Done' && (

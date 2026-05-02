@@ -9,6 +9,7 @@ import Projects from './pages/Projects';
 import ProjectDetails from './pages/ProjectDetails';
 
 import Settings from './pages/Settings';
+import Notifications from './pages/Notifications';
 
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
@@ -29,7 +30,7 @@ const AppContent = () => {
         <Route path="/projects" element={<PrivateRoute><Projects /></PrivateRoute>} />
         <Route path="/projects/:id" element={<PrivateRoute><ProjectDetails /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-        <Route path="/notifications" element={<PrivateRoute><div className="bento-card m-8">Notifications (WIP)</div></PrivateRoute>} />
+        <Route path="/notifications" element={<PrivateRoute><Notifications /></PrivateRoute>} />
       </Routes>
     </Router>
   );

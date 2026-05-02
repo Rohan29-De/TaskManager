@@ -25,6 +25,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const location = useLocation();
   const navigate = useNavigate();
   const [showNewTask, setShowNewTask] = useState(false);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
 
@@ -123,8 +124,62 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <input
                 type="text"
                 placeholder="Search"
-                className="subtle-input pl-10"
+                className="subtle-input pl-10 w-full"
+                onClick={() => setShowSearchDropdown(true)}
+                onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
               />
+
+              {showSearchDropdown && (
+                <div className="absolute top-full left-0 mt-2 w-full bg-white rounded-[24px] shadow-xl z-50 border border-gray-100 overflow-hidden">
+                  <div className="p-6 border-b border-gray-100">
+                    <h4 className="font-bold text-gray-900 mb-4">Add filters</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {['Project', 'Deadline', 'Type', 'Assignee'].map((filter, i) => (
+                        <button key={i} className="flex items-center px-4 py-2 border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50">
+                          <span className="w-4 h-4 rounded-sm bg-gray-100 mr-2 flex items-center justify-center">
+                            {filter === 'Project' ? '📋' : filter === 'Deadline' ? '⏱️' : filter === 'Type' ? '📊' : '👤'}
+                          </span>
+                          {filter}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-6">
+                    <h4 className="font-bold text-gray-900 mb-4">Tasks</h4>
+                    <div className="space-y-4">
+                      {/* Hardcoded items for design matching, can be linked to dynamic search results later */}
+                      <div className="flex items-start">
+                        <CheckCircle2 className="w-5 h-5 text-[#D4B541] mr-3 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">Report - 01/23</p>
+                          <p className="text-xs text-gray-500">E-commerce stuff - Important</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <CheckCircle2 className="w-5 h-5 text-[#D4B541] mr-3 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">Report - 02/23</p>
+                          <p className="text-xs text-gray-500">E-commerce stuff - Important</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <Circle className="w-5 h-5 text-gray-300 mr-3 flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="text-sm font-bold text-gray-900">Report Q4</p>
+                          <p className="text-xs text-gray-500">Company reports - Monthly</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 border-t border-gray-100 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors">
+                    <p className="text-sm font-medium text-gray-700 flex items-center justify-center">
+                      <span className="mr-2">≡</span> Advanced search
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
           
