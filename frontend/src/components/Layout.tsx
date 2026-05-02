@@ -31,6 +31,31 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
+  const [activeSearchFilter, setActiveSearchFilter] = useState<string | null>(null);
+
+  const handleSearch = async (query: string, filter: string | null) => {
+    if (!query && !filter) {
+      setSearchResults([]);
+      return;
+    }
+    try {
+      const res = await api.get('/tasks');
+      setSearchResults(res.data.filter((t: any) => {
+        let matchesQuery = true;
+        if (query) {
+           matchesQuery = t.title.toLowerCase().includes(query.toLowerCase());
+        }
+        
+        let matchesFilter = true;
+        if (filter === 'Deadline') matchesFilter = !!t.dueDate;
+        else if (filter === 'Assignee') matchesFilter = t.assignees && t.assignees.length > 0;
+        else if (filter === 'Type') matchesFilter = t.priority === 'High'; // Just an example mapping 'Type' to 'High Priority'
+        else if (filter === 'Project') matchesFilter = !!t.project;
+
+        return matchesQuery && matchesFilter;
+      }));
+    } catch(err) { console.error(err); }
+  };
 
   const handleLogout = () => {
     logout();
@@ -149,20 +174,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 type="text"
                 placeholder={searchQuery ? '' : 'Search'}
                 value={searchQuery}
-                onChange={async (e) => {
+                onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  if (e.target.value) {
-                    try {
-                      const res = await api.get('/tasks');
-                      setSearchResults(res.data.filter((t: any) => t.title.toLowerCase().includes(e.target.value.toLowerCase())));
-                    } catch(err) { console.error(err); }
-                  } else {
-                    setSearchResults([]);
-                  }
+                  handleSearch(e.target.value, activeSearchFilter);
                 }}
                 className="subtle-input pl-10 w-full"
                 onClick={() => setShowSearchDropdown(true)}
-                onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
+                onBlur={() => setTimeout(() => setShowSearchDropdown(false), 250)}
               />
 
               {showSearchDropdown && (
@@ -171,7 +189,18 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     <h4 className="font-bold text-gray-900 mb-4">Add filters</h4>
                     <div className="flex flex-wrap gap-2">
                       {['Project', 'Deadline', 'Type', 'Assignee'].map((filter, i) => (
-                        <button key={i} className="flex items-center px-4 py-2 border border-gray-200 rounded-full text-sm font-medium hover:bg-gray-50">
+                        <button 
+                          key={i} 
+                          onMouseDown={(e) => {
+                            e.preventDefault(); // prevent input blur
+                            const newFilter = activeSearchFilter === filter ? null : filter;
+                            setActiveSearchFilter(newFilter);
+                            handleSearch(searchQuery, newFilter);
+                          }}
+                          className={clsx("flex items-center px-4 py-2 border rounded-full text-sm font-medium transition-colors cursor-pointer",
+                            activeSearchFilter === filter ? "border-[#F2E266] bg-[#FDF9DE] text-gray-900" : "border-gray-200 hover:bg-gray-50 text-gray-700"
+                          )}
+                        >
                           <span className="w-4 h-4 rounded-sm bg-gray-100 mr-2 flex items-center justify-center">
                             {filter === 'Project' ? '📋' : filter === 'Deadline' ? '⏱️' : filter === 'Type' ? '📊' : '👤'}
                           </span>
