@@ -201,7 +201,7 @@ const Dashboard = () => {
                   try {
                     const newStatus = task.status === 'Done' ? 'To Do' : 'Done';
                     await api.put(`/tasks/${task._id}`, { status: newStatus });
-                    setTasks(tasks.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
+                    setAllTasks(prev => prev.map(t => t._id === task._id ? { ...t, status: newStatus } : t));
                   } catch (e) { console.error(e); }
                 }}>
                   <div className={clsx(
