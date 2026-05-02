@@ -22,13 +22,7 @@ const Dashboard = () => {
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
 
-  const [trackers, setTrackers] = useState([
-    { name: 'Create wireframe', seconds: 5130, active: true },
-    { name: 'Slack logo design', seconds: 1818, active: false },
-    { name: 'Dashboard design', seconds: 6502, active: false },
-    { name: 'Create wireframe', seconds: 1021, active: false },
-    { name: 'Mood tracker', seconds: 54358, active: false },
-  ]);
+  const [activeTrackerId, setActiveTrackerId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -57,7 +51,6 @@ const Dashboard = () => {
       // Category filter
       let matchesCategory = true;
       if (selectedCategory) {
-        // Handle case where project is populated object or string ID
         const taskProjectId = typeof t.project === 'object' && t.project !== null ? (t.project as any)._id : t.project;
         matchesCategory = taskProjectId === selectedCategory;
       }
@@ -69,16 +62,37 @@ const Dashboard = () => {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTrackers(prev => prev.map(t => t.active ? { ...t, seconds: t.seconds + 1 } : t));
+      if (activeTrackerId) {
+        setAllTasks(prev => prev.map(t => 
+          t._id === activeTrackerId ? { ...t, timeSpent: (t.timeSpent || 0) + 1 } : t
+        ));
+      }
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [activeTrackerId]);
 
-  const toggleTracker = (index: number) => {
-    setTrackers(prev => prev.map((t, i) => ({
-      ...t,
-      active: i === index ? !t.active : false // Stop others when starting one
-    })));
+  const toggleTracker = async (taskId: string) => {
+    if (activeTrackerId === taskId) {
+      // Pause
+      setActiveTrackerId(null);
+      const task = allTasks.find(t => t._id === taskId);
+      if (task) {
+        try {
+          await api.put(`/tasks/${taskId}`, { timeSpent: task.timeSpent });
+        } catch (e) { console.error(e); }
+      }
+    } else {
+      // Save current active before switching
+      if (activeTrackerId) {
+        const activeTask = allTasks.find(t => t._id === activeTrackerId);
+        if (activeTask) {
+          try {
+            await api.put(`/tasks/${activeTrackerId}`, { timeSpent: activeTask.timeSpent });
+          } catch (e) { console.error(e); }
+        }
+      }
+      setActiveTrackerId(taskId);
+    }
   };
 
   return (
@@ -207,35 +221,40 @@ const Dashboard = () => {
           </div>
           
           <div className="space-y-2">
-            {trackers.map((track, i) => (
-              <div key={i} className={clsx(
+            {allTasks.length > 0 ? allTasks.slice(0, 5).map((task) => {
+              const isActive = activeTrackerId === task._id;
+              const seconds = task.timeSpent || 0;
+              return (
+              <div key={task._id} className={clsx(
                 "flex items-center justify-between p-3 rounded-xl transition-colors",
-                track.active ? "bg-[#FDF9DE] border-l-4 border-[#F2E266]" : "hover:bg-gray-50 border-l-4 border-transparent"
+                isActive ? "bg-[#FDF9DE] border-l-4 border-[#F2E266]" : "hover:bg-gray-50 border-l-4 border-transparent"
               )}>
                 <div className="flex items-center">
                   <svg className="w-5 h-5 text-gray-400 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  <span className="text-sm font-medium text-gray-800">{track.name}</span>
+                  <span className="text-sm font-medium text-gray-800">{task.title}</span>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <span className={clsx("text-sm", track.active ? "font-bold text-gray-900" : "font-medium text-gray-500")}>
-                    {Math.floor(track.seconds / 3600) > 0 ? `${Math.floor(track.seconds / 3600)}h ` : ''}
-                    {Math.floor((track.seconds % 3600) / 60)}m {track.seconds % 60}s
+                  <span className={clsx("text-sm", isActive ? "font-bold text-gray-900" : "font-medium text-gray-500")}>
+                    {Math.floor(seconds / 3600) > 0 ? `${Math.floor(seconds / 3600)}h ` : ''}
+                    {Math.floor((seconds % 3600) / 60)}m {seconds % 60}s
                   </span>
-                  {track.active ? (
-                    <button onClick={() => toggleTracker(i)} className="w-8 h-8 rounded-full bg-[#F2E266] flex items-center justify-center shadow-sm">
+                  {isActive ? (
+                    <button onClick={() => toggleTracker(task._id)} className="w-8 h-8 rounded-full bg-[#F2E266] flex items-center justify-center shadow-sm">
                       <Pause className="w-4 h-4 text-gray-900" fill="currentColor" />
                     </button>
                   ) : (
-                    <button onClick={() => toggleTracker(i)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-400">
+                    <button onClick={() => toggleTracker(task._id)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 text-gray-400">
                       <Play className="w-4 h-4" fill="currentColor" />
                     </button>
                   )}
                   <button className="text-gray-400 hover:text-gray-600"><MoreVertical className="w-4 h-4" /></button>
                 </div>
               </div>
-            ))}
+            )}) : (
+              <div className="text-sm text-gray-400 p-3">No tasks to track.</div>
+            )}
           </div>
         </div>
       </div>

@@ -45,13 +45,14 @@ body {
 }
 
 .subtle-input {
-  background-color: #F3F4F6;
-  border: none;
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
   border-radius: 12px;
   padding: 10px 16px;
   width: 100%;
   color: var(--color-text-main);
   outline: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
 }
 
 /* Allow tailwind to override padding if needed */

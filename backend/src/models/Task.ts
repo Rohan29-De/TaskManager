@@ -8,6 +8,7 @@ export interface ITask extends Document {
   status: 'To Do' | 'In Progress' | 'Done';
   project: mongoose.Types.ObjectId;
   assignees: mongoose.Types.ObjectId[];
+  timeSpent: number;
 }
 
 const taskSchema = new Schema<ITask>({
@@ -18,6 +19,7 @@ const taskSchema = new Schema<ITask>({
   status: { type: String, enum: ['To Do', 'In Progress', 'Done'], default: 'To Do' },
   project: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
   assignees: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  timeSpent: { type: Number, default: 0 },
 }, { timestamps: true });
 
 export const Task = mongoose.model<ITask>('Task', taskSchema);
