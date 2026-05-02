@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axios';
@@ -37,18 +37,35 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     navigate('/login');
   };
 
+  const [projects, setProjects] = useState<any[]>([]);
+  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const res = await api.get('/projects');
+        setProjects(res.data);
+        if (res.data.length > 0) setSelectedProjectId(res.data[0]._id);
+      } catch (e) { console.error(e); }
+    };
+    fetchProjects();
+  }, [showNewTask]); // Refresh when modal opens
+
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTaskTitle) return;
     try {
-      let projId = '';
-      const projRes = await api.get('/projects');
-      if (projRes.data.length > 0) {
-         projId = projRes.data[0]._id;
-      } else {
-         const newProj = await api.post('/projects', { name: 'Default Project', description: 'Auto-generated project for tasks' });
-         projId = newProj.data._id;
+      let projId = selectedProjectId;
+      // If user has NO projects and creates task, auto-create a default one
+      if (!projId) {
+        if (projects.length > 0) {
+           projId = projects[0]._id;
+        } else {
+           const newProj = await api.post('/projects', { name: 'Default Project', description: 'Auto-generated project for tasks' });
+           projId = newProj.data._id;
+        }
       }
+      
       await api.post('/tasks', {
         title: newTaskTitle,
         description: newTaskDesc,
@@ -278,15 +295,30 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 </div>
               </div>
 
-              <div className="mb-8">
-                <h4 className="font-bold text-gray-900 mb-3">Description</h4>
-                <textarea 
-                  value={newTaskDesc}
-                  onChange={e => setNewTaskDesc(e.target.value)}
-                  className="w-full h-32 bg-[#F9FAFB] rounded-2xl p-4 border-none focus:outline-none focus:ring-2 focus:ring-[#F2E266] resize-none"
-                  placeholder="Add some details..."
-                />
-              </div>
+                <div className="mb-4">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
+                  <textarea 
+                    value={newTaskDesc}
+                    onChange={(e) => setNewTaskDesc(e.target.value)}
+                    placeholder="Add details about this task..."
+                    rows={3}
+                    className="w-full bg-[#F5F6F8] border-none rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#F2E266]"
+                  ></textarea>
+                </div>
+
+                <div className="mb-8">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Category (Project)</label>
+                  <select
+                    value={selectedProjectId}
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className="w-full bg-[#F5F6F8] border-none rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#F2E266] appearance-none cursor-pointer"
+                  >
+                    {projects.length === 0 && <option value="">No categories (will create default)</option>}
+                    {projects.map(p => (
+                      <option key={p._id} value={p._id}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
 
               <div className="flex justify-end">
                 <button type="submit" className="pill-btn pill-btn-primary px-6 py-3 font-bold shadow-sm">

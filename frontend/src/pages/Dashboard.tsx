@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
-import { ChevronLeft, ChevronRight, MoreVertical, Play, Pause, Plus } from 'lucide-react';
+import { ChevronLeft, ChevronRight, MoreVertical, Play, Pause, Plus, X } from 'lucide-react';
 import clsx from 'clsx';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, addMonths, subMonths, isSameDay, getDay } from 'date-fns';
 
@@ -13,7 +13,14 @@ interface Task {
 
 const Dashboard = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [allTasks, setAllTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<any[]>([]);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
   const [trackers, setTrackers] = useState([
     { name: 'Create wireframe', seconds: 5130, active: true },
@@ -24,17 +31,41 @@ const Dashboard = () => {
   ]);
 
   useEffect(() => {
-    // Fetch some real tasks
-    const fetchTasks = async () => {
+    const fetchData = async () => {
       try {
-        const res = await api.get('/tasks');
-        setTasks(res.data.slice(0, 5));
+        const [tasksRes, projsRes] = await Promise.all([
+          api.get('/tasks'),
+          api.get('/projects')
+        ]);
+        setAllTasks(tasksRes.data);
+        setProjects(projsRes.data);
       } catch (err) {
         console.error(err);
       }
     };
-    fetchTasks();
+    fetchData();
   }, []);
+
+  useEffect(() => {
+    // Filter tasks by selected date and category
+    const filtered = allTasks.filter(t => {
+      // Date filter
+      let matchesDate = false;
+      if (!t.dueDate) matchesDate = isSameDay(selectedDate, new Date());
+      else matchesDate = isSameDay(new Date(t.dueDate), selectedDate);
+
+      // Category filter
+      let matchesCategory = true;
+      if (selectedCategory) {
+        // Handle case where project is populated object or string ID
+        const taskProjectId = typeof t.project === 'object' && t.project !== null ? (t.project as any)._id : t.project;
+        matchesCategory = taskProjectId === selectedCategory;
+      }
+
+      return matchesDate && matchesCategory;
+    });
+    setTasks(filtered);
+  }, [allTasks, selectedDate, selectedCategory]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -71,11 +102,16 @@ const Dashboard = () => {
               <div key={`empty-${i}`} className="text-gray-300"></div>
             ))}
             {eachDayOfInterval({ start: startOfMonth(currentDate), end: endOfMonth(currentDate) }).map((date) => {
+              const isSelected = isSameDay(date, selectedDate);
               const isToday = isSameDay(date, new Date());
               return (
-                <div key={date.toISOString()} className={clsx(
-                  isToday ? "w-7 h-7 mx-auto flex items-center justify-center bg-[#F2E266] rounded-full font-bold text-gray-900" : "text-gray-600",
-                  "cursor-pointer hover:font-bold"
+                <div 
+                  key={date.toISOString()} 
+                  onClick={() => setSelectedDate(date)}
+                  className={clsx(
+                  isSelected ? "w-7 h-7 mx-auto flex items-center justify-center bg-[#F2E266] rounded-full font-bold text-gray-900 shadow-sm" : 
+                  isToday ? "w-7 h-7 mx-auto flex items-center justify-center border-2 border-[#F2E266] rounded-full font-bold text-gray-900" : "text-gray-600",
+                  "cursor-pointer hover:font-bold transition-all"
                 )}>
                   {format(date, 'd')}
                 </div>
@@ -91,26 +127,31 @@ const Dashboard = () => {
             <button className="text-gray-400 hover:text-gray-600"><MoreVertical className="w-5 h-5" /></button>
           </div>
           <div className="space-y-5">
-            {[
-              { icon: '💼', name: 'Work', users: [1,2] },
-              { icon: '👥', name: 'Family', users: [3,4,5] },
-              { icon: '🎨', name: 'Freelance work 01', users: [1,6] },
-              { icon: '📅', name: 'Conference planning', users: [7] },
-            ].map((cat, i) => (
-              <div key={i} className="flex justify-between items-center">
+            {projects.length > 0 ? projects.map((cat, i) => (
+              <div 
+                key={cat._id || i} 
+                onClick={() => setSelectedCategory(selectedCategory === cat._id ? null : cat._id)}
+                className={clsx(
+                  "flex justify-between items-center cursor-pointer p-3 -mx-3 rounded-xl transition-colors",
+                  selectedCategory === cat._id ? "bg-[#FDF9DE] border-l-4 border-l-[#F2E266]" : "hover:bg-gray-50 border-l-4 border-l-transparent"
+                )}
+              >
                 <div className="flex items-center text-sm font-medium">
-                  <span className="w-8 flex justify-center text-gray-500">{cat.icon}</span>
+                  <span className="w-8 flex justify-center text-gray-500 text-lg">{(cat.name || 'P').charAt(0).toUpperCase()}</span>
                   <span className="text-gray-700">{cat.name}</span>
                 </div>
                 <div className="flex -space-x-2">
-                  {cat.users.map((u, j) => (
-                    <img key={j} className="w-6 h-6 rounded-full border-2 border-white" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${u}`} alt="" />
-                  ))}
+                  <img className="w-6 h-6 rounded-full border-2 border-white bg-gray-100" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${cat._id || i}`} alt="" />
                 </div>
               </div>
-            ))}
+            )) : (
+              <div className="text-sm text-gray-400">No categories yet.</div>
+            )}
           </div>
-          <button className="mt-6 flex items-center text-sm font-bold text-gray-900">
+          <button 
+            onClick={() => setShowNewCategoryModal(true)}
+            className="mt-6 flex items-center text-sm font-bold text-gray-900 hover:text-gray-600 transition-colors"
+          >
             <Plus className="w-4 h-4 mr-2" /> Add more
           </button>
         </div>
@@ -126,20 +167,7 @@ const Dashboard = () => {
           </div>
           
           <div className="space-y-4">
-            {/* Mix of static and dynamic for visual appeal */}
-            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-              <div className="flex items-center">
-                <div className="w-5 h-5 rounded-full border-2 border-[#F2E266] bg-[#F2E266] flex items-center justify-center mr-3">
-                  <svg className="w-3 h-3 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <span className="text-gray-400 line-through text-sm font-medium">Finish monthly reporting</span>
-              </div>
-              <span className="text-sm font-bold text-[#D4B541]">Today</span>
-            </div>
-
-            {tasks.map((task, i) => (
+            {tasks.length > 0 ? tasks.map((task, i) => (
               <div key={task._id || i} className="flex items-center justify-between pb-4 border-b border-gray-100 last:border-0 last:pb-0">
                 <div className="flex items-center cursor-pointer" onClick={async () => {
                   try {
@@ -160,11 +188,15 @@ const Dashboard = () => {
                   </div>
                   <span className={clsx("text-sm font-medium", task.status === 'Done' ? 'text-gray-400 line-through' : 'text-gray-700')}>{task.title}</span>
                 </div>
-                <span className={clsx("text-sm font-medium", i < 2 ? "text-[#D4B541]" : "text-gray-500")}>
-                  {i < 2 ? 'Today' : 'Tomorrow'}
+                <span className={clsx("text-sm font-medium", isSameDay(selectedDate, new Date()) ? "text-[#D4B541]" : "text-gray-500")}>
+                  {isSameDay(selectedDate, new Date()) ? 'Today' : format(selectedDate, 'MMM d')}
                 </span>
               </div>
-            ))}
+            )) : (
+              <div className="text-center py-6 text-gray-500 font-medium">
+                No tasks for this date.
+              </div>
+            )}
           </div>
         </div>
 
@@ -246,6 +278,58 @@ const Dashboard = () => {
         </button>
       </div>
       
+      {/* New Category Modal */}
+      {showNewCategoryModal && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl relative p-8">
+            <button onClick={() => setShowNewCategoryModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Create new category</h2>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (newCategoryName.trim()) {
+                try {
+                  const res = await api.post('/projects', { name: newCategoryName, description: 'User created category' });
+                  setProjects([...projects, res.data]);
+                  setShowNewCategoryModal(false);
+                  setNewCategoryName('');
+                } catch (err) { console.error(err); }
+              }
+            }}>
+              <div className="mb-8">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Category Name</label>
+                <input 
+                  type="text" 
+                  autoFocus
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="e.g. Design, Development, Marketing..."
+                  className="w-full bg-[#F5F6F8] border-none rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#F2E266] text-gray-900 placeholder-gray-400"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowNewCategoryModal(false)}
+                  className="px-6 py-2 border border-gray-300 rounded-full text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-6 py-2 bg-[#F2E266] rounded-full text-sm font-bold text-gray-900 hover:bg-[#E3D251] shadow-sm transition-colors"
+                >
+                  Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

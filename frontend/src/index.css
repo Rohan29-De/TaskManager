@@ -54,6 +54,11 @@ body {
   outline: none;
 }
 
+/* Allow tailwind to override padding if needed */
+.subtle-input.pl-10 {
+  padding-left: 2.5rem;
+}
+
 .subtle-input:focus {
   box-shadow: 0 0 0 2px var(--color-primary);
 }
