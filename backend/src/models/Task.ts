@@ -1,5 +1,10 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+export interface IComment {
+  text: string;
+  createdAt: Date;
+}
+
 export interface ITask extends Document {
   title: string;
   description?: string;
@@ -9,6 +14,7 @@ export interface ITask extends Document {
   project: mongoose.Types.ObjectId;
   assignees: mongoose.Types.ObjectId[];
   timeSpent: number;
+  comments: IComment[];
 }
 
 const taskSchema = new Schema<ITask>({
@@ -20,6 +26,7 @@ const taskSchema = new Schema<ITask>({
   project: { type: Schema.Types.ObjectId, ref: 'Project', required: true },
   assignees: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   timeSpent: { type: Number, default: 0 },
+  comments: [{ text: String, createdAt: { type: Date, default: Date.now } }],
 }, { timestamps: true });
 
 export const Task = mongoose.model<ITask>('Task', taskSchema);

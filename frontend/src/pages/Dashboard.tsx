@@ -9,6 +9,10 @@ interface Task {
   title: string;
   status: string;
   priority: string;
+  timeSpent?: number;
+  comments?: { _id?: string, text: string, createdAt: string }[];
+  project?: any;
+  dueDate?: string;
 }
 
 const Dashboard = () => {
@@ -22,6 +26,10 @@ const Dashboard = () => {
   const [activeTrackers, setActiveTrackers] = useState<string[]>([]);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+
+  const [showNewCommentModal, setShowNewCommentModal] = useState(false);
+  const [newCommentText, setNewCommentText] = useState('');
+  const [newCommentTaskId, setNewCommentTaskId] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,6 +94,11 @@ const Dashboard = () => {
       setActiveTrackers(prev => [...prev, taskId]);
     }
   };
+
+  const recentComments = allTasks
+    .flatMap(t => (t.comments || []).map(c => ({ ...c, taskId: t._id, taskTitle: t.title })))
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 5);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto h-full pb-8">
@@ -260,23 +273,22 @@ const Dashboard = () => {
           </div>
           
           <div className="space-y-4">
-            <div className="pb-4 border-b border-gray-100 group cursor-pointer">
-              <div className="flex justify-between items-start mb-1">
-                <span className="text-sm font-bold text-gray-900">Market research</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+            {recentComments.length > 0 ? recentComments.map((comment, i) => (
+              <div key={comment._id || i} className="pb-4 border-b border-gray-100 group cursor-pointer last:border-0 last:pb-0">
+                <div className="flex justify-between items-start mb-1">
+                  <span className="text-sm font-bold text-gray-900 truncate pr-2">{comment.taskTitle}</span>
+                  <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 flex-shrink-0" />
+                </div>
+                <p className="text-xs text-gray-500 leading-snug break-words">{comment.text}</p>
               </div>
-              <p className="text-xs text-gray-500 leading-snug">Find my keynote attached...</p>
-            </div>
-            
-            <div className="pb-4 border-b border-gray-100 group cursor-pointer">
-              <div className="flex justify-between items-start mb-1">
-                <span className="text-sm font-bold text-gray-900">Market research</span>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-              </div>
-              <p className="text-xs text-gray-500 leading-snug">I've added the data. Let's check it out toge...</p>
-            </div>
+            )) : (
+              <div className="text-sm text-gray-400 pb-2">No new comments.</div>
+            )}
 
-            <button className="flex items-center text-sm font-bold text-gray-900 mt-2">
+            <button 
+              onClick={() => setShowNewCommentModal(true)}
+              className="flex items-center text-sm font-bold text-gray-900 mt-2 hover:text-gray-600 transition-colors"
+            >
               <Plus className="w-4 h-4 mr-2" /> Add
             </button>
           </div>
@@ -334,6 +346,82 @@ const Dashboard = () => {
                   className="px-6 py-2 bg-[#F2E266] rounded-full text-sm font-bold text-gray-900 hover:bg-[#E3D251] shadow-sm transition-colors"
                 >
                   Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* New Comment Modal */}
+      {showNewCommentModal && (
+        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl relative p-8">
+            <button onClick={() => setShowNewCommentModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors">
+              <X className="w-6 h-6" />
+            </button>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Add a comment</h2>
+            
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (newCommentText.trim() && newCommentTaskId) {
+                try {
+                  const task = allTasks.find(t => t._id === newCommentTaskId);
+                  if (!task) return;
+                  const newComment = { text: newCommentText, createdAt: new Date().toISOString() };
+                  const updatedComments = [...(task.comments || []), newComment];
+                  await api.put(`/tasks/${newCommentTaskId}`, { comments: updatedComments });
+                  
+                  // Update locally
+                  setAllTasks(prev => prev.map(t => 
+                    t._id === newCommentTaskId ? { ...t, comments: updatedComments } : t
+                  ));
+                  setShowNewCommentModal(false);
+                  setNewCommentText('');
+                  setNewCommentTaskId('');
+                } catch (err) { console.error(err); }
+              }
+            }}>
+              <div className="mb-4">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Select Task</label>
+                <select
+                  required
+                  value={newCommentTaskId}
+                  onChange={(e) => setNewCommentTaskId(e.target.value)}
+                  className="w-full bg-[#F5F6F8] border-none rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#F2E266] appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>Choose a task...</option>
+                  {allTasks.map(t => (
+                    <option key={t._id} value={t._id}>{t.title}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="mb-8">
+                <label className="block text-sm font-bold text-gray-700 mb-2">Comment</label>
+                <textarea 
+                  required
+                  rows={3}
+                  value={newCommentText}
+                  onChange={(e) => setNewCommentText(e.target.value)}
+                  placeholder="Write your comment..."
+                  className="w-full bg-[#F5F6F8] border-none rounded-xl py-3 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-[#F2E266] text-gray-900 placeholder-gray-400 resize-none"
+                />
+              </div>
+              
+              <div className="flex justify-end space-x-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowNewCommentModal(false)}
+                  className="px-6 py-2 border border-gray-300 rounded-full text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="px-6 py-2 bg-[#F2E266] rounded-full text-sm font-bold text-gray-900 hover:bg-[#E3D251] shadow-sm transition-colors"
+                >
+                  Post Comment
                 </button>
               </div>
             </form>
