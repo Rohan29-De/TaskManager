@@ -32,6 +32,9 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDesc, setNewTaskDesc] = useState('');
   const [activeSearchFilter, setActiveSearchFilter] = useState<string | null>(null);
+  
+  const [newTaskDueDate, setNewTaskDueDate] = useState<string>('');
+  const [newTaskPriority, setNewTaskPriority] = useState<'Low' | 'Medium' | 'High'>('Medium');
 
   const handleSearch = async (query: string, filter: string | null) => {
     if (!query && !filter) {
@@ -91,15 +94,20 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         }
       }
       
-      await api.post('/tasks', {
+      const reqBody: any = {
         title: newTaskTitle,
         description: newTaskDesc,
-        priority: 'Medium',
+        priority: newTaskPriority,
         projectId: projId
-      });
+      };
+      if (newTaskDueDate) reqBody.dueDate = newTaskDueDate;
+
+      await api.post('/tasks', reqBody);
       setShowNewTask(false);
       setNewTaskTitle('');
       setNewTaskDesc('');
+      setNewTaskDueDate('');
+      setNewTaskPriority('Medium');
       window.location.reload(); // Quick refresh for demo
     } catch (err) {
       console.error(err);
@@ -294,23 +302,57 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 <div className="flex items-center">
                   <span className="w-32 flex items-center text-sm font-medium text-gray-500"><Calendar className="w-4 h-4 mr-2" /> Day</span>
                   <div className="flex space-x-2">
-                    <button type="button" className="px-4 py-1.5 border border-gray-900 rounded-full text-sm font-medium text-gray-900">Today</button>
-                    <button type="button" className="px-4 py-1.5 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-300">Tomorrow</button>
-                    <button type="button" className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"><Plus className="w-4 h-4" /></button>
+                    <button 
+                      type="button" 
+                      onClick={() => setNewTaskDueDate(new Date().toISOString())}
+                      className={clsx("px-4 py-1.5 border rounded-full text-sm font-medium transition-colors", 
+                        newTaskDueDate && new Date(newTaskDueDate).toDateString() === new Date().toDateString() ? "border-[#F2E266] bg-[#FDF9DE] text-gray-900" : "border-gray-200 text-gray-700 hover:border-gray-300")}
+                    >Today</button>
+                    <button 
+                      type="button" 
+                      onClick={() => {
+                        const tmrw = new Date(); tmrw.setDate(tmrw.getDate() + 1);
+                        setNewTaskDueDate(tmrw.toISOString());
+                      }}
+                      className={clsx("px-4 py-1.5 border rounded-full text-sm font-medium transition-colors", 
+                        newTaskDueDate && new Date(newTaskDueDate).toDateString() === new Date(new Date().setDate(new Date().getDate() + 1)).toDateString() ? "border-[#F2E266] bg-[#FDF9DE] text-gray-900" : "border-gray-200 text-gray-700 hover:border-gray-300")}
+                    >Tomorrow</button>
+                    <input 
+                      type="date"
+                      value={newTaskDueDate ? newTaskDueDate.split('T')[0] : ''}
+                      onChange={(e) => {
+                        if(e.target.value) {
+                          setNewTaskDueDate(new Date(e.target.value).toISOString());
+                        } else {
+                          setNewTaskDueDate('');
+                        }
+                      }}
+                      className="border border-gray-200 rounded-full text-sm px-3 py-1.5 text-gray-700 hover:border-gray-300 focus:border-[#F2E266] focus:ring-1 focus:ring-[#F2E266] outline-none transition-colors"
+                    />
                   </div>
                 </div>
 
                 <div className="flex items-center">
                   <span className="w-32 flex items-center text-sm font-medium text-gray-500"><Bell className="w-4 h-4 mr-2" /> Notification</span>
                   <div className="flex space-x-2">
-                    <button type="button" className="px-4 py-1.5 border border-gray-900 rounded-full text-sm font-medium text-gray-900">In 1 hour</button>
+                    <button type="button" className="px-4 py-1.5 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:border-gray-300">In 1 hour</button>
                     <button type="button" className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-50"><Plus className="w-4 h-4" /></button>
                   </div>
                 </div>
 
                 <div className="flex items-center">
                   <span className="w-32 flex items-center text-sm font-medium text-gray-500"><Flag className="w-4 h-4 mr-2" /> Priority</span>
-                  <button type="button" className="flex items-center text-sm font-medium text-gray-500 hover:text-gray-900"><Plus className="w-4 h-4 mr-1" /> Add priority</button>
+                  <div className="flex space-x-2">
+                    {['Low', 'Medium', 'High'].map(p => (
+                      <button 
+                        key={p}
+                        type="button" 
+                        onClick={() => setNewTaskPriority(p as any)}
+                        className={clsx("px-4 py-1.5 border rounded-full text-sm font-medium transition-colors", 
+                          newTaskPriority === p ? "border-[#F2E266] bg-[#FDF9DE] text-gray-900" : "border-gray-200 text-gray-700 hover:bg-gray-50")}
+                      >{p}</button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="flex items-center">
