@@ -31,9 +31,6 @@ const Dashboard = () => {
   const [newCommentText, setNewCommentText] = useState('');
   const [newCommentTaskId, setNewCommentTaskId] = useState('');
 
-  const [addedWidgets, setAddedWidgets] = useState<string[]>([]);
-  const [showWidgetModal, setShowWidgetModal] = useState(false);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -103,51 +100,14 @@ const Dashboard = () => {
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
 
-  const renderWidget = (id: string) => {
-    if (id === 'stats') {
-      const total = allTasks.length;
-      const done = allTasks.filter(t => t.status === 'Done').length;
-      const percentage = total === 0 ? 0 : Math.round((done / total) * 100);
-      return (
-        <div key={id} className="bento-card relative group flex-shrink-0 w-full">
-          <button onClick={() => setAddedWidgets(w => w.filter(wId => wId !== id))} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-            <X className="w-4 h-4" />
-          </button>
-          <h3 className="font-bold text-lg mb-6">Productivity</h3>
-          <div className="flex flex-col items-center justify-center pt-2 pb-4">
-            <div className="text-5xl font-bold text-gray-900 mb-2">{percentage}%</div>
-            <div className="text-sm font-medium text-gray-500 mb-6">Tasks Completed ({done}/{total})</div>
-            <div className="w-full bg-[#F5F6F8] rounded-full h-3 overflow-hidden">
-              <div className="bg-[#F2E266] h-3 rounded-full transition-all duration-1000" style={{ width: `${percentage}%` }}></div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-    if (id === 'deadlines') {
-      const upcoming = allTasks
-        .filter(t => t.status !== 'Done' && t.dueDate)
-        .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
-        .slice(0, 3);
-      return (
-        <div key={id} className="bento-card relative group flex-shrink-0 w-full">
-          <button onClick={() => setAddedWidgets(w => w.filter(wId => wId !== id))} className="absolute top-4 right-4 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-            <X className="w-4 h-4" />
-          </button>
-          <h3 className="font-bold text-lg mb-6">Upcoming Deadlines</h3>
-          <div className="space-y-4">
-            {upcoming.length > 0 ? upcoming.map(t => (
-              <div key={t._id} className="flex justify-between items-center border-b border-gray-100 pb-3 last:border-0 last:pb-0">
-                <span className="text-sm font-bold text-gray-800 truncate pr-2">{t.title}</span>
-                <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md">{format(new Date(t.dueDate!), 'MMM d')}</span>
-              </div>
-            )) : <div className="text-sm text-gray-400">No upcoming deadlines.</div>}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
+  const totalTasks = allTasks.length;
+  const doneTasks = allTasks.filter(t => t.status === 'Done').length;
+  const productivityPercentage = totalTasks === 0 ? 0 : Math.round((doneTasks / totalTasks) * 100);
+
+  const upcomingDeadlines = allTasks
+    .filter(t => t.status !== 'Done' && t.dueDate)
+    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
+    .slice(0, 3);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto h-full pb-8">
@@ -340,22 +300,30 @@ const Dashboard = () => {
             >
               <Plus className="w-4 h-4 mr-2" /> Add
             </button>
+        {/* Productivity Stats Widget */}
+        <div className="bento-card flex-shrink-0 w-full">
+          <h3 className="font-bold text-lg mb-6">Productivity</h3>
+          <div className="flex flex-col items-center justify-center pt-2 pb-4">
+            <div className="text-5xl font-bold text-gray-900 mb-2">{productivityPercentage}%</div>
+            <div className="text-sm font-medium text-gray-500 mb-6">Tasks Completed ({doneTasks}/{totalTasks})</div>
+            <div className="w-full bg-[#F5F6F8] rounded-full h-3 overflow-hidden">
+              <div className="bg-[#F2E266] h-3 rounded-full transition-all duration-1000" style={{ width: `${productivityPercentage}%` }}></div>
+            </div>
           </div>
         </div>
 
-        {/* Render Added Widgets */}
-        {addedWidgets.map(renderWidget)}
-
-        {/* Add Widget Button */}
-        <button 
-          onClick={() => setShowWidgetModal(true)}
-          className="flex-1 rounded-[32px] border-2 border-dashed border-gray-200 bg-transparent flex flex-col items-center justify-center text-gray-500 hover:bg-white hover:border-[#F2E266] hover:text-gray-900 hover:shadow-sm transition-all min-h-[160px] group"
-        >
-          <div className="w-12 h-12 rounded-full bg-gray-50 group-hover:bg-[#FDF9DE] flex items-center justify-center mb-3 transition-colors">
-            <Plus className="w-6 h-6 text-gray-400 group-hover:text-[#D4B541]" />
+        {/* Upcoming Deadlines Widget */}
+        <div className="bento-card flex-shrink-0 w-full">
+          <h3 className="font-bold text-lg mb-6">Upcoming Deadlines</h3>
+          <div className="space-y-4">
+            {upcomingDeadlines.length > 0 ? upcomingDeadlines.map(t => (
+              <div key={t._id} className="flex justify-between items-center border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                <span className="text-sm font-bold text-gray-800 truncate pr-2">{t.title}</span>
+                <span className="text-xs font-bold text-red-500 bg-red-50 px-2 py-1 rounded-md">{format(new Date(t.dueDate!), 'MMM d')}</span>
+              </div>
+            )) : <div className="text-sm text-gray-400">No upcoming deadlines.</div>}
           </div>
-          <span className="font-bold">Add widget</span>
-        </button>
+        </div>
       </div>
       
       {/* New Category Modal */}
@@ -482,38 +450,6 @@ const Dashboard = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* Add Widget Modal */}
-      {showWidgetModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[32px] w-full max-w-md shadow-2xl relative p-8">
-            <button onClick={() => setShowWidgetModal(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors">
-              <X className="w-6 h-6" />
-            </button>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Choose a widget</h2>
-            
-            <div className="space-y-4">
-              <button 
-                disabled={addedWidgets.includes('stats')}
-                onClick={() => { setAddedWidgets([...addedWidgets, 'stats']); setShowWidgetModal(false); }}
-                className="w-full text-left p-4 rounded-2xl border border-gray-100 hover:border-[#F2E266] hover:bg-[#FDF9DE] transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-              >
-                <div className="font-bold text-gray-900 mb-1">Productivity Stats</div>
-                <div className="text-sm text-gray-500">A visual progress bar showing your completed vs total tasks.</div>
-              </button>
-
-              <button 
-                disabled={addedWidgets.includes('deadlines')}
-                onClick={() => { setAddedWidgets([...addedWidgets, 'deadlines']); setShowWidgetModal(false); }}
-                className="w-full text-left p-4 rounded-2xl border border-gray-100 hover:border-[#F2E266] hover:bg-[#FDF9DE] transition-all disabled:opacity-50 disabled:cursor-not-allowed group"
-              >
-                <div className="font-bold text-gray-900 mb-1">Upcoming Deadlines</div>
-                <div className="text-sm text-gray-500">Keep track of your top 3 most urgent tasks that are due soon.</div>
-              </button>
-            </div>
           </div>
         </div>
       )}
