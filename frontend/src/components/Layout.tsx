@@ -41,16 +41,20 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     e.preventDefault();
     if (!newTaskTitle) return;
     try {
-      // In a real scenario we'd pick a project ID. We'll fetch the first project for this demo.
+      let projId = '';
       const projRes = await api.get('/projects');
       if (projRes.data.length > 0) {
-         await api.post('/tasks', {
-           title: newTaskTitle,
-           description: newTaskDesc,
-           priority: 'Medium',
-           projectId: projRes.data[0]._id
-         });
+         projId = projRes.data[0]._id;
+      } else {
+         const newProj = await api.post('/projects', { name: 'Default Project', description: 'Auto-generated project for tasks' });
+         projId = newProj.data._id;
       }
+      await api.post('/tasks', {
+        title: newTaskTitle,
+        description: newTaskDesc,
+        priority: 'Medium',
+        projectId: projId
+      });
       setShowNewTask(false);
       setNewTaskTitle('');
       setNewTaskDesc('');
@@ -126,7 +130,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               </div>
               <input
                 type="text"
-                placeholder="Search"
+                placeholder={searchQuery ? '' : 'Search'}
                 value={searchQuery}
                 onChange={async (e) => {
                   setSearchQuery(e.target.value);

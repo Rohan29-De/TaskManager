@@ -44,6 +44,13 @@ const Notifications = () => {
     }
   };
 
+  const displayTasks = tasks.length > 0 ? tasks : [
+    { _id: '1', title: 'Company research', description: 'John Deere added a new task.', status: 'To Do', priority: 'High', project: { name: 'Secret project' } },
+    { _id: '2', title: 'Market ideation', description: 'Felixovic marked the task complete.', status: 'Done', priority: 'Medium', project: { name: 'Operations' } },
+    { _id: '3', title: 'Illustrations invoicing', description: 'John Deere added a new task.', status: 'To Do', priority: 'Medium', project: { name: 'Marketing' } },
+    { _id: '4', title: 'Yearly wrap-up', description: 'John Deere added a new task.', status: 'To Do', priority: 'High', project: { name: 'Marketing' } },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto h-full flex gap-6 pb-8">
       {/* Notifications List */}
@@ -54,7 +61,7 @@ const Notifications = () => {
         </div>
         
         <div className="flex-1 overflow-y-auto space-y-0">
-          {tasks.map((task, idx) => (
+          {displayTasks.map((task: any, idx) => (
             <div 
               key={task._id} 
               onClick={() => setSelectedTask(task)}

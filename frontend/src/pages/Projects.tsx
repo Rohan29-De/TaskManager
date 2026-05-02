@@ -43,10 +43,11 @@ const Projects = () => {
   };
 
   // Group tasks by mock "time" categories for the UI
-  const groupedTasks = {
-    'Latest notifications': tasks.slice(0, 4),
-    'This week': tasks.slice(4)
-  };
+  const displayTasks = tasks.length > 0 ? tasks : [
+    { _id: '1', title: 'Finish monthly reporting', description: 'Monthly report', status: 'Done', priority: 'Medium', project: { name: 'Operations' } },
+    { _id: '2', title: 'Market research', description: 'Find my keynote attached', status: 'To Do', priority: 'High', project: { name: 'Marketing' } },
+    { _id: '3', title: 'Brand guidelines update', description: 'Review new colors', status: 'To Do', priority: 'Low', project: { name: 'Design' } },
+  ];
 
   return (
     <div className="max-w-6xl mx-auto h-full flex gap-6 relative">
@@ -88,14 +89,14 @@ const Projects = () => {
         <div className="space-y-8">
           <div>
             <div className="grid grid-cols-12 gap-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-4">
-              <div className="col-span-6">Latest notifications</div>
+              <div className="col-span-6">This week</div>
               <div className="col-span-2 text-center">Priority</div>
               <div className="col-span-2 text-center">Team</div>
               <div className="col-span-2 text-right">Assignee</div>
             </div>
 
             <div className="bg-white rounded-[24px] overflow-hidden shadow-sm">
-              {groupedTasks['Latest notifications'].map((task, idx) => (
+              {displayTasks.map((task: any, idx) => (
                 <div 
                   key={task._id} 
                   className={clsx(
@@ -117,7 +118,7 @@ const Projects = () => {
                     </button>
                     <div className="ml-3">
                       <h4 className={clsx("text-sm font-bold", task.status === 'Done' && "text-gray-400 line-through")}>{task.title}</h4>
-                      <p className="text-xs text-gray-500 mt-1 truncate">{task.description || `${task.project?.name || 'Project'} • ${idx === 0 ? 'John Deere added a new task' : 'Monthly report'}`}</p>
+                      <p className="text-xs text-gray-500 mt-1 truncate">{task.description || `${task.project?.name || 'Project'} • Task`}</p>
                     </div>
                   </div>
                   
@@ -133,7 +134,7 @@ const Projects = () => {
                   </div>
                   
                   <div className="col-span-2 text-center text-sm text-gray-600">
-                    {idx % 2 === 0 ? 'Marketing O2' : 'Operations'}
+                    {task.project?.name || (idx % 2 === 0 ? 'Marketing O2' : 'Operations')}
                   </div>
                   
                   <div className="col-span-2 flex justify-end">
