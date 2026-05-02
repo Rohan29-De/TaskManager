@@ -141,11 +141,14 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       {/* Sidebar */}
       <aside className="w-64 bg-white flex flex-col justify-between py-6 shadow-sm z-10">
         <div>
-          <div className="px-8 flex items-center mb-10">
-            <div className="w-8 h-8 rounded-full bg-[#F2E266] flex items-center justify-center font-bold text-sm mr-3">
-              AZ
+          <div className="px-6 flex flex-col items-center mb-12">
+            <div className="relative mb-4">
+              <div className="absolute -inset-2 bg-[#F2E266] rounded-full blur opacity-10 transition duration-1000"></div>
+              <img src="/image.png" alt="Tasky Logo" className="relative w-20 h-20 object-contain rounded-2xl shadow-lg" />
             </div>
-            <span className="text-xl font-bold tracking-tight">Organizo</span>
+            <span className="text-3xl font-extrabold tracking-tighter bg-gradient-to-b from-[#FCD34D] to-[#D97706] bg-clip-text text-transparent" style={{ fontFamily: "'Outfit', sans-serif" }}>
+              Tasky
+            </span>
           </div>
 
           <nav className="space-y-1">
@@ -297,7 +300,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                     />
                     <div className="overflow-hidden">
                       <p className="text-sm font-bold text-gray-900 truncate">{user?.name || 'Guest User'}</p>
-                      <p className="text-xs text-gray-500 truncate">{user?.email || 'guest@organizo.com'}</p>
+                      <p className="text-xs text-gray-500 truncate">{user?.email || 'guest@tasky.com'}</p>
                     </div>
                   </div>
                   <div className="p-2">
