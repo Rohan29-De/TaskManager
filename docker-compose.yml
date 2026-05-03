@@ -1,0 +1,18 @@
+services:
+  mongodb:
+    image: mongo:4.4
+    container_name: taskmanager-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: taskmanager
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongodb_data:

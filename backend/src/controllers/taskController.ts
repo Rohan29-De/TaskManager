@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import mongoose from 'mongoose';
 import { AuthRequest } from '../middleware/authMiddleware';
 import { Task } from '../models/Task';
 import { Project } from '../models/Project';
@@ -25,6 +26,11 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
     }
 
     const { title, description, dueDate, priority, status, projectId, assignees, tags, notification } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(projectId)) {
+      res.status(400).json({ error: 'Invalid project ID' });
+      return;
+    }
 
     const project = await Project.findById(projectId);
     if (!project) {
@@ -129,6 +135,35 @@ export const updateTask = async (req: AuthRequest, res: Response): Promise<void>
     await task.save();
     res.status(200).json(task);
   } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+export const deleteTask = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { taskId } = req.params as { taskId: string };
+
+    if (!mongoose.Types.ObjectId.isValid(taskId)) {
+      res.status(400).json({ error: 'Invalid task ID. Note: Demo tasks cannot be deleted.' });
+      return;
+    }
+
+    const task = await Task.findById(taskId);
+    if (!task) {
+      res.status(404).json({ error: 'Task not found' });
+      return;
+    }
+
+    const project = await Project.findById(task.project);
+    if (!project || project.admin.toString() !== req.user!._id.toString()) {
+      res.status(403).json({ error: 'Only project admins can delete tasks' });
+      return;
+    }
+
+    await task.deleteOne();
+    res.status(200).json({ message: 'Task deleted successfully' });
+  } catch (err) {
+    console.error('Delete task error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };

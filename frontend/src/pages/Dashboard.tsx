@@ -30,6 +30,7 @@ const Dashboard = () => {
   const [showNewCommentModal, setShowNewCommentModal] = useState(false);
   const [newCommentText, setNewCommentText] = useState('');
   const [newCommentTaskId, setNewCommentTaskId] = useState('');
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -342,11 +343,17 @@ const Dashboard = () => {
               e.preventDefault();
               if (newCategoryName.trim()) {
                 try {
+                  setIsCreatingCategory(true);
                   const res = await api.post('/projects', { name: newCategoryName, description: 'User created category' });
                   setProjects([...projects, res.data]);
                   setShowNewCategoryModal(false);
                   setNewCategoryName('');
-                } catch (err) { console.error(err); }
+                } catch (err: any) { 
+                  console.error(err); 
+                  alert(err.response?.data?.error || 'Failed to create category');
+                } finally {
+                  setIsCreatingCategory(false);
+                }
               }
             }}>
               <div className="mb-8">
@@ -354,6 +361,7 @@ const Dashboard = () => {
                 <input 
                   type="text" 
                   autoFocus
+                  required
                   value={newCategoryName}
                   onChange={(e) => setNewCategoryName(e.target.value)}
                   placeholder="e.g. Design, Development, Marketing..."
@@ -371,9 +379,14 @@ const Dashboard = () => {
                 </button>
                 <button 
                   type="submit" 
-                  className="px-6 py-2 bg-[#F2E266] rounded-full text-sm font-bold text-gray-900 hover:bg-[#E3D251] shadow-sm transition-colors"
+                  disabled={!newCategoryName.trim() || isCreatingCategory}
+                  className="px-6 py-2 bg-[#F2E266] rounded-full text-sm font-bold text-gray-900 hover:bg-[#E3D251] shadow-sm transition-colors disabled:opacity-50 flex items-center justify-center min-w-[100px]"
                 >
-                  Create
+                  {isCreatingCategory ? (
+                    <div className="w-4 h-4 border-2 border-gray-900 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    'Create'
+                  )}
                 </button>
               </div>
             </form>

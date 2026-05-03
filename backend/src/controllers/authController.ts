@@ -17,8 +17,10 @@ const loginSchema = Joi.object({
 
 export const signup = async (req: Request, res: Response): Promise<void> => {
   try {
+    console.log('Signup request received:', req.body);
     const { error } = signupSchema.validate(req.body);
     if (error) {
+      console.log('Validation error:', error);
       res.status(400).json({ error: error.details[0].message });
       return;
     }
@@ -27,17 +29,21 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      console.log('User already exists:', email);
       res.status(400).json({ error: 'Email already exists' });
       return;
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = new User({ name, email, passwordHash });
+    console.log('Saving user:', { name, email });
     await user.save();
+    console.log('User saved successfully:', user._id);
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
     res.status(201).json({ user: { id: user._id, name, email }, token });
-  } catch (err) {
+  } catch (err: any) {
+    console.error('Signup error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -67,6 +73,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || 'secret', { expiresIn: '1d' });
     res.status(200).json({ user: { id: user._id, name: user.name, email: user.email }, token });
   } catch (err) {
+    console.error('Login error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };
@@ -84,6 +91,7 @@ export const getAllUsers = async (req: Request, res: Response): Promise<void> =>
     const users = await User.find({}, 'name email _id');
     res.status(200).json(users);
   } catch (err) {
+    console.error('GetAllUsers error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 };

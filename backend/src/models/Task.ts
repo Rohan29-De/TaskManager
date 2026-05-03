@@ -12,6 +12,11 @@ export interface IAttachment {
   createdAt: Date;
 }
 
+export interface ILink {
+  title: string;
+  url: string;
+}
+
 export interface ITask extends Document {
   title: string;
   description?: string;
@@ -23,6 +28,7 @@ export interface ITask extends Document {
   timeSpent: number;
   comments: IComment[];
   attachments: IAttachment[];
+  links: ILink[];
   tags: string[];
   notification: string;
 }
@@ -42,6 +48,10 @@ const taskSchema = new Schema<ITask>({
     url: String,
     size: Number,
     createdAt: { type: Date, default: Date.now }
+  }],
+  links: [{
+    title: String,
+    url: String
   }],
   tags: [{ type: String }],
   notification: { type: String },
