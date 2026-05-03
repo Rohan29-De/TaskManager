@@ -121,5 +121,12 @@ TaskManager/
 
 ---
 
-## 🎯 Deployment
-*Deployment guide for Railway will be documented here once the backend and frontend are live.*
+## 🌐 Deployment Note
+
+**Note:** While initially planned for Railway, this project has been successfully deployed using a high-performance split-hosting architecture to ensure 100% uptime and scalability within free-tier constraints:
+
+- **Frontend:** Deployed on **Vercel** for lightning-fast content delivery (Edge Network) and seamless React integration.
+- **Backend:** Hosted on **Render** (Node.js Web Service) providing a robust and secure API environment.
+- **Database:** Powered by **MongoDB Atlas** (Cloud M0 Cluster), ensuring persistent, high-availability data storage.
+
+This architecture ensures that the application is fully live, secure, and ready for collaborative team use.
