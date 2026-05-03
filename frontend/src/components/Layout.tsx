@@ -285,7 +285,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm hover:ring-2 hover:ring-[#F2E266] transition-all focus:outline-none"
               >
                 <img 
-                  src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
+                  src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
                   alt="Profile" 
                   className="w-full h-full object-cover bg-[#FAD9A1]"
                 />
@@ -295,7 +295,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                 <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden transform origin-top-right transition-all">
                   <div className="p-4 border-b border-gray-50 flex items-center">
                     <img 
-                      src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
+                      src={user?.avatarUrl || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.name || 'User'}`} 
                       className="w-10 h-10 rounded-full bg-[#FAD9A1] mr-3 border border-gray-100"
                     />
                     <div className="overflow-hidden">
