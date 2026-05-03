@@ -1,7 +1,5 @@
 # Tasky - Team Task Management Web Application
 
-![Tasky Dashboard UI](https://raw.githubusercontent.com/Rohan29-De/TaskManager/main/frontend/public/login_hero.jpg)
-
 Tasky is a comprehensive, full-stack collaborative task management application designed for teams. Built as a simplified alternative to tools like Trello or Asana, Tasky empowers users to organize projects, assign tasks, track deadlines, and monitor productivity—all wrapped in a beautifully crafted, highly responsive premium user interface.
 
 ## 🚀 Features
