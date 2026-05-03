@@ -137,16 +137,16 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   ];
 
   return (
-    <div className="flex h-screen bg-[#F5F6F8] overflow-hidden">
+    <div className="flex h-screen bg-[#F0EDE6] overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 bg-white flex flex-col justify-between py-6 shadow-sm z-10">
+      <aside className="w-64 bg-[#1E1E2E] flex flex-col justify-between py-6 shadow-xl z-10">
         <div>
           <div className="px-6 flex flex-col items-center mb-12">
             <div className="relative mb-4">
-              <div className="absolute -inset-2 bg-[#F2E266] rounded-full blur opacity-10 transition duration-1000"></div>
+              <div className="absolute -inset-2 bg-[#F2E266] rounded-full blur opacity-20 transition duration-1000"></div>
               <img src="/image.png" alt="Tasky Logo" className="relative w-20 h-20 object-contain rounded-2xl shadow-lg" />
             </div>
-            <span className="text-3xl font-extrabold tracking-tighter bg-gradient-to-b from-[#FCD34D] to-[#D97706] bg-clip-text text-transparent" style={{ fontFamily: "'Outfit', sans-serif" }}>
+            <span className="text-3xl font-extrabold tracking-tighter bg-gradient-to-b from-[#FCD34D] to-[#F2E266] bg-clip-text text-transparent" style={{ fontFamily: "'Outfit', sans-serif" }}>
               Tasky
             </span>
           </div>
@@ -159,13 +159,13 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   key={item.name}
                   to={item.path}
                   className={clsx(
-                    'flex items-center px-8 py-3 text-sm font-medium transition-colors border-l-4',
+                    'flex items-center px-8 py-3 text-sm font-bold transition-all border-l-4 rounded-r-xl',
                     isActive 
-                      ? 'border-[#F2E266] bg-[#F9FAFB] text-gray-900' 
-                      : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'border-[#F2E266] bg-[#F2E266]/15 text-white' 
+                      : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200'
                   )}
                 >
-                  <item.icon className={clsx("mr-3 h-5 w-5", isActive ? "text-gray-900" : "text-gray-400")} />
+                  <item.icon className={clsx("mr-3 h-5 w-5", isActive ? "text-[#F2E266]" : "text-gray-500")} />
                   {item.name}
                 </Link>
               );
@@ -174,15 +174,15 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         </div>
 
         <div className="space-y-1">
-          <Link to="/settings" className={clsx("w-full flex items-center px-8 py-3 text-sm font-medium transition-colors border-l-4", location.pathname === '/settings' ? 'border-[#F2E266] bg-[#F9FAFB] text-gray-900' : 'border-transparent text-gray-500 hover:bg-gray-50 hover:text-gray-900')}>
-            <Settings className={clsx("mr-3 h-5 w-5", location.pathname === '/settings' ? "text-gray-900" : "text-gray-400")} />
+          <Link to="/settings" className={clsx("w-full flex items-center px-8 py-3 text-sm font-bold transition-all border-l-4 rounded-r-xl", location.pathname === '/settings' ? 'border-[#F2E266] bg-[#F2E266]/15 text-white' : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-gray-200')}>
+            <Settings className={clsx("mr-3 h-5 w-5", location.pathname === '/settings' ? "text-[#F2E266]" : "text-gray-500")} />
             Settings
           </Link>
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center px-8 py-3 text-sm font-medium text-gray-500 hover:bg-gray-50 hover:text-gray-900 border-l-4 border-transparent"
+            className="w-full flex items-center px-8 py-3 text-sm font-medium text-gray-400 hover:bg-white/5 hover:text-red-400 border-l-4 border-transparent transition-all"
           >
-            <LogOut className="mr-3 h-5 w-5 text-gray-400" />
+            <LogOut className="mr-3 h-5 w-5 text-gray-500" />
             Log out
           </button>
         </div>
@@ -205,7 +205,7 @@ export const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) =>
                   setSearchQuery(e.target.value);
                   handleSearch(e.target.value, activeSearchFilter);
                 }}
-                className="subtle-input pl-10 w-full"
+                className="subtle-input pl-10 w-full bg-[#E8E5DD] border-[#DDD9CF]"
                 onClick={() => setShowSearchDropdown(true)}
                 onBlur={() => setTimeout(() => setShowSearchDropdown(false), 250)}
               />

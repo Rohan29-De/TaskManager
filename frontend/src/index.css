@@ -3,21 +3,45 @@
 @theme {
   --color-primary: #F2E266;
   --color-primary-hover: #E3D251;
-  --color-bg-app: #F5F6F8;
-  --color-bg-card: #FFFFFF;
+  --color-bg-app: #F0EDE6;
+  --color-bg-card: #FAFAF7;
+  --color-bg-sidebar: #1E1E2E;
   --color-text-main: #1A1A1A;
   --color-text-muted: #6B7280;
-  --color-border-subtle: #E5E7EB;
+  --color-border-subtle: #E2DFD5;
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Outfit', 'Inter', sans-serif;
   background-color: var(--color-bg-app);
   color: var(--color-text-main);
   margin: 0;
   padding: 0;
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
 }
+
+/* Global font scaling */
+h1 { font-size: 2.25rem; font-weight: 800; }
+h2 { font-size: 1.75rem; font-weight: 700; }
+h3 { font-size: 1.25rem; font-weight: 700; }
+h4 { font-size: 1.05rem; font-weight: 600; }
+
+p, span, label, a, li {
+  font-weight: 500;
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 500;
+}
+
+/* Make Tailwind text-sm slightly larger */
+.text-sm { font-size: 0.9rem !important; }
+.text-xs { font-size: 0.8rem !important; }
 
 .bento-card {
   background-color: var(--color-bg-card);

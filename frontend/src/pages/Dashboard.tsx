@@ -115,7 +115,7 @@ const Dashboard = () => {
       
       {/* Column 1 */}
       <div className="lg:col-span-3 flex flex-col gap-6">
-        <div className="bento-card">
+        <div className="bento-card bg-[#FFFDF0] border border-[#F2E266]/30">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-lg">{format(currentDate, 'MMMM yyyy')}</h3>
             <div className="flex space-x-2">
@@ -150,7 +150,7 @@ const Dashboard = () => {
         </div>
 
         {/* My categories */}
-        <div className="bento-card flex-1">
+        <div className="bento-card flex-1 bg-[#FFF8EE] border border-[#F5D4A1]/30">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-lg">My categories</h3>
             <button className="text-gray-400 hover:text-gray-600"><MoreVertical className="w-5 h-5" /></button>
@@ -189,7 +189,7 @@ const Dashboard = () => {
       {/* Column 2 */}
       <div className="lg:col-span-6 flex flex-col gap-6">
         {/* My Tasks */}
-        <div className="bento-card">
+        <div className="bento-card bg-[#FAFAF7] border border-[#E2DFD5]">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-lg">My tasks ({tasks.length || '05'})</h3>
             <button className="text-gray-400 hover:text-gray-600"><MoreVertical className="w-5 h-5" /></button>
@@ -230,7 +230,7 @@ const Dashboard = () => {
         </div>
 
         {/* My Tracking */}
-        <div className="bento-card flex-1">
+        <div className="bento-card flex-1 bg-[#FEF9EE] border border-[#F2E266]/20">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-lg">My tracking</h3>
           </div>
@@ -277,7 +277,7 @@ const Dashboard = () => {
       {/* Column 3 */}
       <div className="lg:col-span-3 flex flex-col gap-6">
         {/* New Comments */}
-        <div className="bento-card">
+        <div className="bento-card bg-[#FFF7F0] border border-[#F5C4A1]/25">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-lg">New comments</h3>
           </div>
@@ -305,7 +305,7 @@ const Dashboard = () => {
         </div>
 
         {/* Productivity Stats Widget */}
-        <div className="bento-card flex-shrink-0 w-full">
+        <div className="bento-card flex-shrink-0 w-full bg-[#FFFBE8] border border-[#F2E266]/30">
           <h3 className="font-bold text-lg mb-6">Productivity</h3>
           <div className="flex flex-col items-center justify-center pt-2 pb-4">
             <div className="text-5xl font-bold text-gray-900 mb-2">{productivityPercentage}%</div>
@@ -317,7 +317,7 @@ const Dashboard = () => {
         </div>
 
         {/* Upcoming Deadlines Widget */}
-        <div className="bento-card flex-shrink-0 w-full">
+        <div className="bento-card flex-shrink-0 w-full bg-[#FFF5F5] border border-[#F5A1A1]/20">
           <h3 className="font-bold text-lg mb-6">Upcoming Deadlines</h3>
           <div className="space-y-4">
             {upcomingDeadlines.length > 0 ? upcomingDeadlines.map(t => (

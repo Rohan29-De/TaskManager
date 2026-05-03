@@ -185,63 +185,125 @@ const Projects = () => {
         </div>
 
         <div className="space-y-8">
-          <div>
-            <div className="grid grid-cols-12 gap-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-4 px-4">
-              <div className="col-span-6">This week</div>
-              <div className="col-span-2 text-center">Priority</div>
-              <div className="col-span-2 text-center">Team</div>
-              <div className="col-span-2 text-right">Assignee</div>
-            </div>
+          {(() => {
+            const now = new Date();
+            const todayStr = now.toDateString();
+            const tomorrow = new Date(now);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const tomorrowStr = tomorrow.toDateString();
+            const endOfWeek = new Date(now);
+            endOfWeek.setDate(endOfWeek.getDate() + (7 - endOfWeek.getDay()));
 
-            <div className="bg-white rounded-[24px] overflow-hidden shadow-sm">
-              {filteredTasks.map((task: any, idx) => (
-                <div 
-                  key={task._id} 
-                  className={clsx(
-                    "grid grid-cols-12 gap-4 items-center p-4 border-b border-gray-100 last:border-0 hover:bg-gray-50 cursor-pointer transition-colors",
-                    idx === 0 && "bg-[#FDF9DE] border-l-4 border-l-[#F2E266]"
-                  )}
-                  onClick={() => setSelectedTask(task)}
-                >
-                  <div className="col-span-6 flex items-start">
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); toggleTaskStatus(task); }}
-                      className="mt-1 flex-shrink-0"
-                    >
-                      {task.status === 'Done' ? (
-                        <CheckCircle2 className="w-5 h-5 text-[#D4B541]" />
-                      ) : (
-                        <Circle className="w-5 h-5 text-gray-300" />
-                      )}
-                    </button>
-                    <div className="ml-3">
-                      <h4 className={clsx("text-sm font-bold", task.status === 'Done' && "text-gray-400 line-through")}>{task.title}</h4>
-                      <p className="text-xs text-gray-500 mt-1 truncate">{task.description || `${task.project?.name || 'Project'} • Task`}</p>
-                    </div>
+            const todayTasks = filteredTasks.filter((t: any) => {
+              if (!t.dueDate) return true; // tasks with no due date show under Today
+              return new Date(t.dueDate).toDateString() === todayStr;
+            });
+            const tomorrowTasks = filteredTasks.filter((t: any) => {
+              if (!t.dueDate) return false;
+              return new Date(t.dueDate).toDateString() === tomorrowStr;
+            });
+            const weekTasks = filteredTasks.filter((t: any) => {
+              if (!t.dueDate) return false;
+              const d = new Date(t.dueDate);
+              return d.toDateString() !== todayStr && d.toDateString() !== tomorrowStr && d <= endOfWeek;
+            });
+            const laterTasks = filteredTasks.filter((t: any) => {
+              if (!t.dueDate) return false;
+              const d = new Date(t.dueDate);
+              return d > endOfWeek;
+            });
+
+            const renderSection = (label: string, sectionTasks: any[]) => {
+              if (sectionTasks.length === 0) return null;
+              return (
+                <div key={label} className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-gray-100">
+                  {/* Section Header */}
+                  <div className="grid grid-cols-12 gap-4 text-xs font-bold text-gray-400 uppercase tracking-wider px-6 py-4 border-b border-gray-100">
+                    <div className="col-span-4">{label}</div>
+                    <div className="col-span-2 text-center">Due Date</div>
+                    <div className="col-span-2 text-center">Stage</div>
+                    <div className="col-span-1 text-center">Priority</div>
+                    <div className="col-span-2 text-center">Team</div>
+                    <div className="col-span-1 text-right">Assignee</div>
                   </div>
-                  
-                  <div className="col-span-2 flex justify-center">
-                    <span className={clsx(
-                      "px-3 py-1 rounded-full text-xs font-medium",
-                      task.priority === 'High' ? "bg-[#D4B541] text-white" :
-                      task.priority === 'Medium' ? "bg-[#E6DBAD] text-gray-800" :
-                      "bg-[#E5E7EB] text-gray-800"
-                    )}>
-                      {task.priority}
-                    </span>
-                  </div>
-                  
-                  <div className="col-span-2 text-center text-sm text-gray-600">
-                    {task.project?.name || (idx % 2 === 0 ? 'Marketing O2' : 'Operations')}
-                  </div>
-                  
-                  <div className="col-span-2 flex justify-end">
-                    <img className="w-8 h-8 rounded-full border-2 border-white shadow-sm bg-[#FDF9DE]" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${idx}`} alt="Assignee" />
-                  </div>
+
+                  {/* Task Rows */}
+                  {sectionTasks.map((task: any, idx: number) => {
+                    const dueDateLabel = !task.dueDate ? 'No date' :
+                      new Date(task.dueDate).toDateString() === todayStr ? 'Today' :
+                      new Date(task.dueDate).toDateString() === tomorrowStr ? 'Tomorrow' :
+                      format(new Date(task.dueDate), 'EEEE');
+
+                    const statusColor = task.status === 'In Progress' ? 'bg-green-100 text-green-700' :
+                      task.status === 'Done' ? 'bg-[#FDF9DE] text-[#D4B541]' : 'bg-gray-100 text-gray-600';
+
+                    const priorityColor = task.priority === 'High' ? 'bg-[#D4B541] text-white' :
+                      task.priority === 'Medium' ? 'bg-[#FDF9DE] text-[#D4B541]' : 'bg-gray-100 text-gray-500';
+
+                    return (
+                      <div
+                        key={task._id}
+                        className="grid grid-cols-12 gap-4 items-center px-6 py-4 border-b border-gray-50 last:border-0 hover:bg-[#FDFCF5] cursor-pointer transition-colors group"
+                        onClick={() => setSelectedTask(task)}
+                      >
+                        <div className="col-span-4 flex items-center">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); toggleTaskStatus(task); }}
+                            className="flex-shrink-0 mr-3"
+                          >
+                            {task.status === 'Done' ? (
+                              <CheckCircle2 className="w-5 h-5 text-[#D4B541]" />
+                            ) : (
+                              <Circle className="w-5 h-5 text-gray-300 group-hover:text-gray-400 transition-colors" />
+                            )}
+                          </button>
+                          <span className={clsx("text-sm font-semibold truncate", task.status === 'Done' && "text-gray-400 line-through")}>{task.title}</span>
+                        </div>
+
+                        <div className="col-span-2 text-center">
+                          <span className="text-sm font-medium text-[#D4B541]">{dueDateLabel}</span>
+                        </div>
+
+                        <div className="col-span-2 flex justify-center">
+                          <span className={clsx("px-3 py-1 rounded-full text-xs font-bold", statusColor)}>
+                            {task.status === 'To Do' ? 'Not started' : task.status}
+                          </span>
+                        </div>
+
+                        <div className="col-span-1 flex justify-center">
+                          <span className={clsx("px-3 py-1 rounded-full text-xs font-bold", priorityColor)}>
+                            {task.priority}
+                          </span>
+                        </div>
+
+                        <div className="col-span-2 text-center text-sm text-gray-600 truncate">
+                          {task.project?.name || 'General'}
+                        </div>
+
+                        <div className="col-span-1 flex justify-end">
+                          <img className="w-8 h-8 rounded-full border-2 border-white shadow-sm bg-[#FDF9DE]" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${idx}`} alt="Assignee" />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
-            </div>
-          </div>
+              );
+            };
+
+            return (
+              <>
+                {renderSection('Today', todayTasks)}
+                {renderSection('Tomorrow', tomorrowTasks)}
+                {renderSection('This week', weekTasks)}
+                {renderSection('Later', laterTasks)}
+                {filteredTasks.length === 0 && (
+                  <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-12 text-center">
+                    <p className="text-gray-400 text-sm">No tasks yet. Create one using the <strong>+ New task</strong> button above!</p>
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       </div>
 
