@@ -29,15 +29,24 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row overflow-hidden" style={{ background: 'linear-gradient(135deg, #fff 50%, #FCD34D 50%)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-8" style={{ background: 'linear-gradient(135deg, #F0EDE6 0%, #E8E5DD 100%)' }}>
+      <div className="w-full max-w-6xl min-h-[700px] flex flex-col md:flex-row overflow-hidden bg-[#FAFAF7] rounded-[48px] shadow-2xl relative">
 
-      {/* LEFT: Form */}
-      <div className="flex-1 flex flex-col justify-center items-center p-8 md:p-16 z-10 bg-white">
-        <div className="w-full max-w-md">
-          <div className="flex items-center space-x-3 mb-16">
-            <img src="/logo.png" alt="Tasky" className="w-12 h-12 rounded-xl shadow-md" />
-            <span className="text-3xl font-extrabold tracking-tighter text-gray-900" style={{ fontFamily: "'Outfit', sans-serif" }}>
-              Tasky
+        {/* LEFT: Form */}
+        <div className="flex-1 flex flex-col justify-center items-center p-8 md:p-16 z-10 relative">
+        
+        {/* CSS Background Designs */}
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-[#F2E266] rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-80 h-80 bg-[#F5D4A1] rounded-full mix-blend-multiply filter blur-3xl opacity-30"></div>
+        
+        <div className="w-full max-w-md relative z-10">
+          {/* New Stylish Text Logo */}
+          <div className="flex items-center space-x-4 mb-16">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#F2E266] to-[#D4B541] flex items-center justify-center shadow-lg animate-[bounce_3s_infinite]">
+               <span className="text-gray-900 text-3xl font-black animate-[spin_8s_linear_infinite]" style={{ fontFamily: "'Outfit', sans-serif" }}>T</span>
+            </div>
+            <span className="text-6xl font-extrabold text-[#E89E27] tracking-wide" style={{ fontFamily: "'Baloo 2', cursive" }}>
+              Tasky<span className="text-[#F2E266]">.</span>
             </span>
           </div>
 
@@ -53,10 +62,10 @@ const Signup = () => {
 
           <div className="relative mb-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-100"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white px-4 text-gray-400 uppercase tracking-widest font-bold">Or register with email</span>
+              <span className="bg-[#FAFAF7] px-4 text-gray-400 uppercase tracking-widest font-bold">Or register with email</span>
             </div>
           </div>
 
@@ -77,7 +86,7 @@ const Signup = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Full Name"
-                className="w-full pl-12 pr-4 py-4 bg-[#F5F6F8] border-none rounded-2xl text-sm focus:ring-2 focus:ring-[#F2E266] transition-all outline-none text-gray-900 placeholder-gray-400"
+                className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl text-sm focus:border-[#D4B541] focus:ring-2 focus:ring-[#F2E266]/30 transition-all outline-none text-gray-900 placeholder-gray-400 shadow-sm"
               />
             </div>
 
@@ -91,7 +100,7 @@ const Signup = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email address"
-                className="w-full pl-12 pr-4 py-4 bg-[#F5F6F8] border-none rounded-2xl text-sm focus:ring-2 focus:ring-[#F2E266] transition-all outline-none text-gray-900 placeholder-gray-400"
+                className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl text-sm focus:border-[#D4B541] focus:ring-2 focus:ring-[#F2E266]/30 transition-all outline-none text-gray-900 placeholder-gray-400 shadow-sm"
               />
             </div>
 
@@ -105,7 +114,7 @@ const Signup = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
-                className="w-full pl-12 pr-4 py-4 bg-[#F5F6F8] border-none rounded-2xl text-sm focus:ring-2 focus:ring-[#F2E266] transition-all outline-none text-gray-900 placeholder-gray-400"
+                className="w-full pl-12 pr-4 py-4 bg-white border border-gray-200 rounded-2xl text-sm focus:border-[#D4B541] focus:ring-2 focus:ring-[#F2E266]/30 transition-all outline-none text-gray-900 placeholder-gray-400 shadow-sm"
               />
             </div>
 
@@ -131,14 +140,15 @@ const Signup = () => {
       </div>
 
       {/* RIGHT: Hero Image */}
-      <div className="flex-1 relative hidden md:block overflow-hidden">
+      <div className="flex-1 relative hidden md:block bg-white p-6 md:p-12 flex items-center justify-center">
         <img
           src="/login_hero.jpg"
           alt="Tasky mascot"
-          className="w-full h-full object-cover"
+          className="max-w-full max-h-full rounded-[48px] shadow-xl"
         />
       </div>
     </div>
+  </div>
   );
 };
 

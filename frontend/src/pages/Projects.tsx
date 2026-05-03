@@ -359,7 +359,7 @@ const Projects = () => {
                   <select 
                     value={selectedTask.priority}
                     onChange={(e) => handleUpdateTask({ priority: e.target.value })}
-                    disabled={selectedTask.project?.admin !== user?._id}
+                    disabled={selectedTask.project?.admin !== user?.id && selectedTask.project?.admin !== (user as any)?._id}
                     className={clsx("px-4 py-1.5 rounded-full font-bold border border-transparent focus:ring-0 cursor-pointer disabled:opacity-50 appearance-none text-center min-w-[100px]", 
                       selectedTask.priority === 'High' ? "bg-red-50 text-red-600" :
                       selectedTask.priority === 'Medium' ? "bg-[#FDF9DE] text-[#D4B541]" : "bg-[#F5F6F8] text-gray-600"
@@ -376,7 +376,7 @@ const Projects = () => {
                     type="date"
                     value={selectedTask.dueDate ? format(new Date(selectedTask.dueDate), 'yyyy-MM-dd') : ''}
                     onChange={(e) => handleUpdateTask({ dueDate: e.target.value })}
-                    disabled={selectedTask.project?.admin !== user?._id}
+                    disabled={selectedTask.project?.admin !== user?.id && selectedTask.project?.admin !== (user as any)?._id}
                     className="font-bold text-gray-900 bg-transparent border-none p-0 text-right focus:ring-0 cursor-pointer disabled:opacity-50"
                   />
                 </div>
@@ -409,18 +409,8 @@ const Projects = () => {
                     </div>
                   </div>
                 )) : (
-                  <div className="flex items-start mb-6">
-                    <img className="w-10 h-10 rounded-full mr-4 bg-[#FAD9A1] shadow-sm" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Felixovic`} alt="Avatar" />
-                    <div className="flex-1 mt-1">
-                      <div className="flex justify-between items-center mb-1">
-                        <h4 className="font-extrabold text-gray-900">Felixovic</h4>
-                        <span className="text-xs text-gray-400 font-medium">Nov 5 2022 at 12.14 PM</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mt-2 font-medium">Here are the numbers from the store. Add it to reporting.</p>
-                      <button className="mt-4 flex items-center px-4 py-1.5 border border-gray-200 rounded-full text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
-                        <Paperclip className="w-3 h-3 mr-2" /> Attach
-                      </button>
-                    </div>
+                  <div className="text-center py-8">
+                    <p className="text-gray-400 text-sm italic font-medium">No comments yet. Start the conversation!</p>
                   </div>
                 )}
               </div>
@@ -452,26 +442,16 @@ const Projects = () => {
                     </button>
                   </div>
                 )) : (
-                  <>
-                    <div className="flex items-center p-4 border border-gray-100 rounded-2xl">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white font-extrabold shadow-sm bg-[#10B981]">
-                        <span className="text-[10px]">XL</span>
-                      </div>
-                      <p className="text-sm font-bold text-gray-600 truncate">E-commerce numbers.xls</p>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-200 rounded-[24px] p-8 text-center hover:border-[#D4B541] hover:bg-[#FDF9DE]/50 cursor-pointer transition-all group flex flex-col items-center justify-center"
+                  >
+                    <div className="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mb-3 group-hover:bg-white shadow-sm transition-colors">
+                      <Paperclip className="w-5 h-5 text-gray-400 group-hover:text-[#D4B541]" />
                     </div>
-                    <div className="flex items-center p-4 border border-gray-100 rounded-2xl">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white font-extrabold shadow-sm bg-[#F43F5E]">
-                        <span className="text-[10px]">PP</span>
-                      </div>
-                      <p className="text-sm font-bold text-gray-600 truncate">SAP numbers.pptx</p>
-                    </div>
-                    <div className="flex items-center p-4 border border-gray-100 rounded-2xl">
-                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white font-extrabold shadow-sm bg-[#3B82F6]">
-                        <span className="text-[10px]">DO</span>
-                      </div>
-                      <p className="text-sm font-bold text-gray-600 truncate">New products.doc</p>
-                    </div>
-                  </>
+                    <p className="text-sm font-bold text-gray-600 mb-1">Upload attachments</p>
+                    <p className="text-xs text-gray-400 font-medium">Click to browse your files</p>
+                  </div>
                 )}
               </div>
 
