@@ -382,7 +382,7 @@ const Projects = () => {
                 </div>
               </div>
 
-              {selectedTask.project?.admin === user?._id && (
+              {(selectedTask.project?.admin === (user as any)?._id || selectedTask.project?.admin === user?.id) && (
                 <div className="mt-auto pt-8">
                   <button 
                     onClick={handleDeleteTask}
