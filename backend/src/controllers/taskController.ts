@@ -38,9 +38,9 @@ export const createTask = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    // Check if user is a member of the project
-    if (!project.members.includes(req.user!._id as any)) {
-      res.status(403).json({ error: 'You are not a member of this project' });
+    // Check if user is the admin of the project (Role-based access requirement)
+    if (project.admin.toString() !== req.user!._id.toString()) {
+      res.status(403).json({ error: 'Only project admins can create tasks' });
       return;
     }
 
@@ -82,7 +82,7 @@ export const getTasks = async (req: AuthRequest, res: Response): Promise<void> =
     }
 
     const tasks = await Task.find(filter)
-      .populate('project', 'name')
+      .populate('project', 'name admin')
       .populate('assignees', 'name email');
       
     res.status(200).json(tasks);

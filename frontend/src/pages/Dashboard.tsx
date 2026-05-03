@@ -22,6 +22,7 @@ const Dashboard = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>(null);
 
   const [activeTrackers, setActiveTrackers] = useState<string[]>([]);
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
@@ -35,12 +36,14 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [tasksRes, projsRes] = await Promise.all([
+        const [tasksRes, projsRes, statsRes] = await Promise.all([
           api.get('/tasks'),
-          api.get('/projects')
+          api.get('/projects'),
+          api.get('/stats')
         ]);
         setAllTasks(tasksRes.data);
         setProjects(projsRes.data);
+        setStats(statsRes.data);
       } catch (err) {
         console.error(err);
       }
@@ -111,7 +114,41 @@ const Dashboard = () => {
     .slice(0, 3);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto h-full pb-8">
+    <div className="flex flex-col h-full max-w-7xl mx-auto pb-8 gap-6 overflow-y-auto">
+      {/* Required Assignment Stats Section */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 shrink-0">
+          <div className="bento-card bg-[#FDF9DE] border border-[#F2E266]/50 text-gray-900 shadow-sm">
+            <h3 className="font-bold text-gray-700 mb-1">Total Tasks</h3>
+            <p className="text-4xl font-black text-[#D4B541]">{stats.totalTasks}</p>
+          </div>
+          <div className="bento-card bg-white border border-gray-100">
+            <h3 className="font-medium text-gray-500 mb-1">By Status</h3>
+            <div className="flex gap-2 text-sm mt-2">
+              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md font-bold">{stats.tasksByStatus['To Do'] || 0} To Do</span>
+              <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-md font-bold">{stats.tasksByStatus['In Progress'] || 0} In Progress</span>
+              <span className="bg-[#FDF9DE] text-[#D4B541] px-2 py-0.5 rounded-md font-bold">{stats.tasksByStatus['Done'] || 0} Done</span>
+            </div>
+          </div>
+          <div className="bento-card bg-white border border-gray-100">
+            <h3 className="font-medium text-gray-500 mb-1">Tasks Per User</h3>
+            <div className="flex -space-x-2 mt-2">
+              {Object.entries(stats.tasksPerUser).slice(0, 5).map(([userId, count]) => (
+                <div key={userId} className="relative group">
+                  <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${userId}`} alt="User" className="w-8 h-8 rounded-full border-2 border-white bg-gray-100" />
+                  <span className="absolute -top-2 -right-2 bg-[#F2E266] text-gray-900 text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center border border-white">{count as number}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="bento-card bg-red-50 border border-red-100">
+            <h3 className="font-medium text-red-400 mb-1">Overdue Tasks</h3>
+            <p className="text-4xl font-extrabold text-red-600">{stats.overdueTasks}</p>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 shrink-0">
       
       {/* Column 1 */}
       <div className="lg:col-span-3 flex flex-col gap-6">
@@ -161,7 +198,7 @@ const Dashboard = () => {
                 key={cat._id || i} 
                 onClick={() => setSelectedCategory(selectedCategory === cat._id ? null : cat._id)}
                 className={clsx(
-                  "flex justify-between items-center cursor-pointer p-3 -mx-3 rounded-xl transition-colors",
+                  "flex justify-between items-center cursor-pointer p-3 -mx-3 rounded-xl transition-colors border-b border-[#F5D4A1]/40 last:border-0",
                   selectedCategory === cat._id ? "bg-[#FDF9DE] border-l-4 border-l-[#F2E266]" : "hover:bg-gray-50 border-l-4 border-l-transparent"
                 )}
               >
@@ -197,7 +234,7 @@ const Dashboard = () => {
           
           <div className="space-y-4">
             {tasks.length > 0 ? tasks.map((task, i) => (
-              <div key={task._id || i} className="flex items-center justify-between pb-4 border-b border-gray-100 last:border-0 last:pb-0">
+              <div key={task._id || i} className="flex items-center justify-between pb-4 border-b border-gray-200 last:border-0 last:pb-0">
                 <div className="flex items-center cursor-pointer" onClick={async () => {
                   try {
                     const newStatus = task.status === 'Done' ? 'To Do' : 'Done';
@@ -241,7 +278,7 @@ const Dashboard = () => {
               const seconds = task.timeSpent || 0;
               return (
               <div key={task._id} className={clsx(
-                "flex items-center justify-between p-3 rounded-xl transition-colors",
+                "flex items-center justify-between p-3 rounded-xl transition-colors border-b border-[#F2E266]/30 last:border-0",
                 isActive ? "bg-[#FDF9DE] border-l-4 border-[#F2E266]" : "hover:bg-gray-50 border-l-4 border-transparent"
               )}>
                 <div className="flex items-center">
@@ -330,6 +367,7 @@ const Dashboard = () => {
         </div>
       </div>
       
+      </div>
       {/* New Category Modal */}
       {showNewCategoryModal && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">

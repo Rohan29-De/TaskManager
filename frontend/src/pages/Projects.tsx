@@ -3,6 +3,7 @@ import api from '../api/axios';
 import { Filter, X, Search, Paperclip, CheckCircle2, Circle } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
+import { useAuth } from '../context/AuthContext';
 
 interface Task {
   _id: string;
@@ -11,7 +12,7 @@ interface Task {
   status: string;
   priority: string;
   dueDate?: string;
-  project: { name: string; _id?: string };
+  project: { name: string; _id?: string; admin?: string };
   assignees?: any[];
   comments?: { text: string; createdAt: string; user?: any }[];
   attachments?: { name: string; url: string; size: number; createdAt: string }[];
@@ -26,6 +27,7 @@ const Projects = () => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
   
   const fetchTasks = async () => {
     try {
@@ -317,35 +319,35 @@ const Projects = () => {
             </button>
 
             {/* Left Pane - Meta */}
-            <div className="w-1/3 bg-[#F9FAFB] p-8 border-r border-gray-100 flex flex-col">
-              <div className="flex space-x-4 mb-8 text-gray-400">
+            <div className="w-1/3 bg-[#F5F4F0] p-10 border-r border-gray-100 flex flex-col relative rounded-l-[32px]">
+              <div className="flex space-x-4 mb-10 text-gray-400">
                 <button 
                   onClick={() => toggleTaskStatus(selectedTask)}
-                  className={clsx("transition-colors", selectedTask.status === 'Done' ? "text-[#D4B541]" : "hover:text-gray-900")}
+                  className={clsx("transition-colors flex items-center justify-center w-8 h-8 rounded-full border", selectedTask.status === 'Done' ? "border-[#D4B541] text-[#D4B541] bg-[#FDF9DE]" : "border-gray-300 hover:border-gray-400 text-gray-400")}
                 >
-                  <CheckCircle2 className="w-5 h-5" />
+                  <CheckCircle2 className="w-4 h-4" />
                 </button>
                 <button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="hover:text-gray-900 transition-colors"
+                  className="flex items-center justify-center w-8 h-8 hover:text-gray-900 transition-colors"
                 >
-                  <Paperclip className="w-5 h-5" />
+                  <Paperclip className="w-4 h-4" />
                 </button>
               </div>
               
-              <h2 className="text-3xl font-bold text-gray-900 mb-4 leading-tight">{selectedTask.title}</h2>
-              <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+              <h2 className="text-4xl font-extrabold text-gray-900 mb-6 tracking-tight leading-tight">{selectedTask.title}</h2>
+              <p className="text-sm text-gray-500 mb-10 leading-relaxed">
                 {selectedTask.description || "Fill out the monthly report, so everyone in the company is happy and see your productivity!"}
               </p>
               
-              <h3 className="font-bold text-gray-900 mb-4">Info</h3>
-              <div className="space-y-4 text-sm">
+              <h3 className="font-extrabold text-gray-900 mb-6 text-lg">Info</h3>
+              <div className="space-y-5 text-sm font-bold">
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 flex items-center"><span className="w-4 h-4 mr-2 bg-gray-200 rounded-sm"></span> Status</span>
+                  <span className="text-gray-400 flex items-center"><span className="w-4 h-4 mr-3 bg-gray-200 rounded-md"></span> Status</span>
                   <select 
                     value={selectedTask.status}
                     onChange={(e) => handleUpdateTask({ status: e.target.value })}
-                    className="bg-gray-100 px-3 py-1 rounded-full font-medium border-none focus:ring-0 cursor-pointer"
+                    className="bg-[#F5F6F8] text-gray-700 px-4 py-1.5 rounded-full font-bold border border-transparent focus:ring-0 cursor-pointer appearance-none text-center min-w-[100px]"
                   >
                     <option value="To Do">To Do</option>
                     <option value="In Progress">In Progress</option>
@@ -353,13 +355,14 @@ const Projects = () => {
                   </select>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 flex items-center"><span className="w-4 h-4 mr-2 bg-gray-200 rounded-sm"></span> Priority</span>
+                  <span className="text-gray-400 flex items-center"><span className="w-4 h-4 mr-3 bg-gray-200 rounded-md"></span> Priority</span>
                   <select 
                     value={selectedTask.priority}
                     onChange={(e) => handleUpdateTask({ priority: e.target.value })}
-                    className={clsx("px-3 py-1 rounded-full font-medium border-none focus:ring-0 cursor-pointer", 
-                      selectedTask.priority === 'High' ? "bg-[#D4B541] text-white" :
-                      selectedTask.priority === 'Medium' ? "bg-[#FDF9DE] text-[#D4B541]" : "bg-gray-100"
+                    disabled={selectedTask.project?.admin !== user?._id}
+                    className={clsx("px-4 py-1.5 rounded-full font-bold border border-transparent focus:ring-0 cursor-pointer disabled:opacity-50 appearance-none text-center min-w-[100px]", 
+                      selectedTask.priority === 'High' ? "bg-red-50 text-red-600" :
+                      selectedTask.priority === 'Medium' ? "bg-[#FDF9DE] text-[#D4B541]" : "bg-[#F5F6F8] text-gray-600"
                     )}
                   >
                     <option value="Low">Low</option>
@@ -368,61 +371,74 @@ const Projects = () => {
                   </select>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-500 flex items-center"><span className="w-4 h-4 mr-2 bg-gray-200 rounded-sm"></span> Deadline</span>
+                  <span className="text-gray-400 flex items-center"><span className="w-4 h-4 mr-3 bg-gray-200 rounded-md"></span> Deadline</span>
                   <input 
                     type="date"
                     value={selectedTask.dueDate ? format(new Date(selectedTask.dueDate), 'yyyy-MM-dd') : ''}
                     onChange={(e) => handleUpdateTask({ dueDate: e.target.value })}
-                    className="font-medium text-gray-900 border-none bg-transparent p-0 text-right focus:ring-0 cursor-pointer"
+                    disabled={selectedTask.project?.admin !== user?._id}
+                    className="font-bold text-gray-900 bg-transparent border-none p-0 text-right focus:ring-0 cursor-pointer disabled:opacity-50"
                   />
                 </div>
               </div>
 
-              <div className="mt-auto pt-8">
-                <button 
-                  onClick={handleDeleteTask}
-                  className="w-full py-3 bg-red-50 text-red-600 rounded-2xl text-sm font-bold hover:bg-red-100 transition-colors flex items-center justify-center"
-                >
-                  <X className="w-4 h-4 mr-2" /> Delete Task
-                </button>
-              </div>
+              {selectedTask.project?.admin === user?._id && (
+                <div className="mt-auto pt-8">
+                  <button 
+                    onClick={handleDeleteTask}
+                    className="w-full py-3 bg-red-50 text-red-600 rounded-2xl text-sm font-bold hover:bg-red-100 transition-colors flex items-center justify-center"
+                  >
+                    <X className="w-4 h-4 mr-2" /> Delete Task
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Right Pane - Content */}
-            <div className="w-2/3 p-8 pt-16 bg-white flex flex-col overflow-y-auto">
-              <div className="space-y-6 mb-8">
+            <div className="w-2/3 p-10 bg-white flex flex-col overflow-y-auto rounded-r-[32px]">
+              <div className="space-y-6 mb-10">
                 {selectedTask.comments && selectedTask.comments.length > 0 ? selectedTask.comments.map((comment, i) => (
-                  <div key={i} className="flex items-start">
-                    <img className="w-10 h-10 rounded-full mr-4 bg-[#FAD9A1] border border-gray-100 shadow-sm" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.user?.name || i}`} alt="Avatar" />
-                    <div className="flex-1">
+                  <div key={i} className="flex items-start mb-6">
+                    <img className="w-10 h-10 rounded-full mr-4 bg-[#FAD9A1] shadow-sm" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.user?.name || i}`} alt="Avatar" />
+                    <div className="flex-1 mt-1">
                       <div className="flex justify-between items-center mb-1">
-                        <h4 className="font-bold text-gray-900">{comment.user?.name || 'You'}</h4>
-                        <span className="text-xs text-gray-400">{format(new Date(comment.createdAt), 'MMM d, h:mm a')}</span>
+                        <h4 className="font-extrabold text-gray-900">{comment.user?.name || 'Felixovic'}</h4>
+                        <span className="text-xs text-gray-400 font-medium">{format(new Date(comment.createdAt), 'MMM d yyyy \'at\' h.mm a')}</span>
                       </div>
-                      <p className="text-sm text-gray-600">{comment.text}</p>
+                      <p className="text-sm text-gray-600 mt-2 font-medium">{comment.text}</p>
                     </div>
                   </div>
                 )) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-400 text-sm italic">No comments yet. Start the conversation!</p>
+                  <div className="flex items-start mb-6">
+                    <img className="w-10 h-10 rounded-full mr-4 bg-[#FAD9A1] shadow-sm" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=Felixovic`} alt="Avatar" />
+                    <div className="flex-1 mt-1">
+                      <div className="flex justify-between items-center mb-1">
+                        <h4 className="font-extrabold text-gray-900">Felixovic</h4>
+                        <span className="text-xs text-gray-400 font-medium">Nov 5 2022 at 12.14 PM</span>
+                      </div>
+                      <p className="text-sm text-gray-600 mt-2 font-medium">Here are the numbers from the store. Add it to reporting.</p>
+                      <button className="mt-4 flex items-center px-4 py-1.5 border border-gray-200 rounded-full text-xs font-bold text-gray-600 hover:bg-gray-50 transition-colors">
+                        <Paperclip className="w-3 h-3 mr-2" /> Attach
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
 
-              <h3 className="font-bold text-gray-900 mb-4">Attachments</h3>
-              <div className="space-y-3 mb-8">
+              <h3 className="font-extrabold text-gray-900 mb-6 text-lg">Attachments</h3>
+              <div className="space-y-3 mb-10">
                 {selectedTask.attachments && selectedTask.attachments.length > 0 ? selectedTask.attachments.map((file, i) => (
-                  <div key={i} className="flex items-center p-3 border border-gray-100 rounded-2xl hover:bg-gray-50 cursor-pointer transition-all group">
+                  <div key={i} className="flex items-center p-4 border border-gray-100 rounded-2xl hover:border-gray-200 transition-all group">
                     <div className={clsx(
-                      "w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white shadow-sm",
-                      file.name.endsWith('.xls') || file.name.endsWith('.xlsx') ? "bg-green-500" : 
-                      file.name.endsWith('.pdf') ? "bg-red-500" : "bg-blue-500"
+                      "w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white font-extrabold shadow-sm",
+                      file.name.endsWith('.xls') || file.name.endsWith('.xlsx') ? "bg-[#10B981]" : 
+                      file.name.endsWith('.ppt') || file.name.endsWith('.pptx') ? "bg-[#F43F5E]" : 
+                      file.name.endsWith('.pdf') ? "bg-[#EF4444]" : "bg-[#3B82F6]"
                     )}>
-                      <span className="text-[10px] font-black">{file.name.split('.').pop()?.toUpperCase()}</span>
+                      <span className="text-[10px]">{file.name.split('.').pop()?.toUpperCase()?.substring(0, 2) || 'FI'}</span>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold text-gray-800 truncate">{file.name}</p>
-                      <p className="text-[10px] text-gray-400">{(file.size / 1024).toFixed(1)} KB • {format(new Date(file.createdAt), 'MMM d')}</p>
+                      <p className="text-sm font-bold text-gray-600 truncate">{file.name}</p>
                     </div>
                     <button 
                       onClick={(e) => {
@@ -436,41 +452,53 @@ const Projects = () => {
                     </button>
                   </div>
                 )) : (
-                  <div 
-                    onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gray-100 rounded-[24px] p-8 text-center hover:border-[#F2E266] hover:bg-gray-50 cursor-pointer transition-all group"
-                  >
-                    <Paperclip className="w-8 h-8 text-gray-300 mx-auto mb-2 group-hover:text-[#D4B541]" />
-                    <p className="text-sm text-gray-400 font-medium">No attachments yet</p>
-                    <p className="text-xs text-gray-300">Click to upload documents</p>
-                  </div>
+                  <>
+                    <div className="flex items-center p-4 border border-gray-100 rounded-2xl">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white font-extrabold shadow-sm bg-[#10B981]">
+                        <span className="text-[10px]">XL</span>
+                      </div>
+                      <p className="text-sm font-bold text-gray-600 truncate">E-commerce numbers.xls</p>
+                    </div>
+                    <div className="flex items-center p-4 border border-gray-100 rounded-2xl">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white font-extrabold shadow-sm bg-[#F43F5E]">
+                        <span className="text-[10px]">PP</span>
+                      </div>
+                      <p className="text-sm font-bold text-gray-600 truncate">SAP numbers.pptx</p>
+                    </div>
+                    <div className="flex items-center p-4 border border-gray-100 rounded-2xl">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center mr-4 text-white font-extrabold shadow-sm bg-[#3B82F6]">
+                        <span className="text-[10px]">DO</span>
+                      </div>
+                      <p className="text-sm font-bold text-gray-600 truncate">New products.doc</p>
+                    </div>
+                  </>
                 )}
               </div>
 
               <div className="mt-auto relative">
                 <form onSubmit={(e) => { e.preventDefault(); handleAddComment(); }}>
-                  <div className="flex items-center w-full bg-[#F5F6F8] rounded-full px-4 py-1 group focus-within:ring-2 focus-within:ring-[#F2E266] transition-all">
+                  <div className="flex items-center w-full bg-[#F5F6F8] rounded-full px-5 py-2 transition-all border border-transparent focus-within:border-gray-200 focus-within:bg-white focus-within:shadow-sm">
                     <button 
                       type="button" 
                       onClick={() => fileInputRef.current?.click()}
-                      className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
                     >
-                      <Paperclip className="w-4 h-4" />
+                      <Paperclip className="w-5 h-5" />
                     </button>
                     <input 
                       type="text" 
                       value={commentText}
                       onChange={(e) => setCommentText(e.target.value)}
-                      placeholder="Comment, or type / for comment" 
-                      className="flex-1 bg-transparent border-none py-3 text-sm focus:outline-none text-gray-700"
+                      placeholder="Add a comment..." 
+                      className="flex-1 bg-transparent border-none py-2 px-3 text-sm font-medium focus:outline-none text-gray-700"
                     />
                     <button 
                       type="submit"
                       disabled={!commentText.trim() || isUpdating}
                       className="w-8 h-8 bg-[#F2E266] rounded-full flex items-center justify-center hover:bg-[#E3D251] transition-all transform active:scale-95 disabled:opacity-50 shadow-sm"
                     >
-                      <svg className="w-4 h-4 text-gray-900 transform rotate-45" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                      <svg className="w-4 h-4 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                       </svg>
                     </button>
                   </div>
