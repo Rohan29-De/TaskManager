@@ -169,7 +169,7 @@ const Dashboard = () => {
                   <span className="text-gray-700">{cat.name}</span>
                 </div>
                 <div className="flex -space-x-2">
-                  <img className="w-6 h-6 rounded-full border-2 border-white bg-gray-100" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${cat._id || i}`} alt="" />
+                  <img className="w-6 h-6 rounded-full border border-[#F2E266] bg-[#FDF9DE] shadow-sm" src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${cat._id || i}`} alt="" />
                 </div>
               </div>
             )) : (

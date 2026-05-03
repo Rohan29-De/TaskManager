@@ -5,6 +5,13 @@ export interface IComment {
   createdAt: Date;
 }
 
+export interface IAttachment {
+  name: string;
+  url: string;
+  size: number;
+  createdAt: Date;
+}
+
 export interface ITask extends Document {
   title: string;
   description?: string;
@@ -15,6 +22,7 @@ export interface ITask extends Document {
   assignees: mongoose.Types.ObjectId[];
   timeSpent: number;
   comments: IComment[];
+  attachments: IAttachment[];
   tags: string[];
   notification: string;
 }
@@ -29,6 +37,12 @@ const taskSchema = new Schema<ITask>({
   assignees: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   timeSpent: { type: Number, default: 0 },
   comments: [{ text: String, createdAt: { type: Date, default: Date.now } }],
+  attachments: [{
+    name: String,
+    url: String,
+    size: Number,
+    createdAt: { type: Date, default: Date.now }
+  }],
   tags: [{ type: String }],
   notification: { type: String },
 }, { timestamps: true });

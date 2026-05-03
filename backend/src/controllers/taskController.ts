@@ -88,7 +88,7 @@ export const getTasks = async (req: AuthRequest, res: Response): Promise<void> =
 export const updateTask = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { taskId } = req.params;
-    const { status, priority, assignees, dueDate, title, description, timeSpent, comments, tags, notification } = req.body;
+    const { status, priority, assignees, dueDate, title, description, timeSpent, comments, tags, notification, attachments } = req.body;
 
     const task = await Task.findById(taskId);
     if (!task) {
@@ -124,6 +124,7 @@ export const updateTask = async (req: AuthRequest, res: Response): Promise<void>
     if (comments !== undefined) task.comments = comments;
     if (tags !== undefined) task.tags = tags;
     if (notification !== undefined) task.notification = notification;
+    if (attachments !== undefined) task.attachments = attachments;
 
     await task.save();
     res.status(200).json(task);
